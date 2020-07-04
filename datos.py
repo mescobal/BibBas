@@ -1,75 +1,49 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""Modulo para interactuar con base de datos. Puede definirse un motor"""
-# import warnings ; warnings.filterwarnings('ignore')
-import MySQLdb
-import MySQLdb.cursors
+#!/usr/bin/env python3
+"""Modulo para interactuar con base de datos. Puede definirse un motor
+Version 5.23: autofiltrar al buscar por indice (ir_a)
+"""
 import sqlite3
-import ConfigParser
-#import os
-class Datos():
+import psycopg2
+import psycopg2.extras
+from lib import ifmxdb
+
+
+class Datos(object):
     """Encapsula llamadas al motor de base de datos"""
-    def __init__(self, host = "",  data = "", motor = ""):
-        """Experimental: posibilidad de inclir como motor SQLite"""
-        # Lee valores por defecto desde archivo de configuracion
-        # Seguridad: posibilidad de colocar el archivo en /etc
-        config = ConfigParser.ConfigParser()
-        config.readfp(open("./conf/geined.conf"))
-        if host == "":
-            host = config.get("mysql","host")
-        if data == "":
-            data = config.get("mysql","schema")
-        if motor == "":
-            motor = "mysql"
+    def __init__(self, motor, data=""):
         # Asigna valores a atributos del objeto Datos
-        self.host = host
         self.motor = motor
-        self.user = config.get("mysql","user")
-        self.passwd = config.get("mysql","password")
-        self.data = data
         self.num_filas = 0
-        if self.motor == "mysql":
-            # Aun no está pronta la posibilidad de SQLite3
-            try:
-                self.db = MySQLdb.connect(self.host, self.user, self.passwd,
-                    db=self.data)
-                self.cursor = self.db.cursor(MySQLdb.cursors.DictCursor)
-                self.lista = self.db.cursor()
-            except MySQLdb.Error ,  e:
-                self.error(e)
+        if self.motor == "ifmx":
+            # Falta adecuar la configuracion de informix
+            self.ifmx = ifmxdb.Ifmx()
+        elif self.motor == "pg":
+            self.datab = psycopg2.connect(host='100.0.2.65', database="magik", user="postgres", password="postgres")
+            self.cursor = self.datab.cursor(cursor_factory=psycopg2.extras.DictCursor)
         else:
+            # la opcion por defecto es sqlite
+            # la extensión es "db"
+            self.data = data
             try:
-                self.db = sqlite3.connect(self.data + ".sq3")
-                self.db.row_factory = sqlite3.Row
-                self.cursor = self.db.cursor()
-            except sqlite3.Error, e:
-                self.error(e)
+                # Directorio por defecto "./datos"
+                self.datab = sqlite3.connect("./datos/" + self.data + ".db")
+                self.datab.row_factory = sqlite3.Row
+                self.cursor = self.datab.cursor()
+            except sqlite3.Error as error:
+                print(error)
 
     def ejecutar(self, sql):
         """Rutina genérica de ejecución de SQL levanta error si corresponde"""
         try:
             self.cursor.execute(sql)
-        except MySQLdb.Error, e:
-            self.error(e)
-
-    def error(self, error):
-        """Página web mostrando error de acceso a base de datos"""
-        print 'Content-Type: text/html; charset=utf-8'
-        print ""
-        print '<head>'
-        print '<script type="text/javascript" src="geined.js" charset="utf-8"></script>'
-        print "<title>Error</title>"
-        print '<link type="text/css" href="./css/geined.css" rel="stylesheet" />'
-        print '</head>'
-        print '<body><div id="env_fina">'
-        print "<h1>Entrada al sistema</h1>"
-        print "No se pudo estabecer la conexion con la base de datos por " + str(error) + ".<br />"
-        print "</div></body></html>"
+            self.datab.commit()
+        except RuntimeError as error:
+            print(error)
 
 
 class Tabla(Datos):
     """Clase para interactuar con una tabla genérica"""
-    def __init__(self, table = "clientes", clave="id", data="", ins_clave=False):
+    def __init__(self, motor, table, clave="id", data="", ins_clave=False):
         """Al inicializar debería ini el diccionario y cargar un registro con valores"""
         # Ojo! debería rise un error si tabla no existe
         # Si no se especifica nada el campo Key es ID
@@ -82,24 +56,24 @@ class Tabla(Datos):
         self.filtro = ""
         self.encontrado = False
         self.campos = {}
-        Datos.__init__(self, data = self.bdd)
+        Datos.__init__(self, motor, data=self.bdd)
         # Campo que funciona como clave
         self.clave = clave
         # define si al insertar se inserta o no el valor del campo clave (x ej si es autonum)
         self.insertar_clave = ins_clave
         # Lee un registro y lo almacena en el diccionario interno
-        # TODO: si la tabla no existe, dar un mensaje de error
+        # si la tabla no existe, DEBERIA dar un mensaje de error
         self.registro = {}
         self.resultado = {}
         sql = "SELECT * FROM " + self.tabla + " LIMIT 1"
         self.cursor.execute(sql)
         self.asignar_campos()
         self.asignar_datos(sql)
+
     def asignar_campos(self):
         """Asigna descripciones de campos de la tabla abierta"""
-        datos = {}
-        tipos = {5:"DOUBLE", 7:"TIMESTAMP", 8:"BIGINT", 10:"DATE",
-            246:"DECIMAL", 253:"VARCHAR", 254:"CHAR"}
+        tipos = {5: "DOUBLE", 7: "TIMESTAMP", 8: "BIGINT", 10: "DATE",
+                 246: "DECIMAL", 253: "VARCHAR", 254: "CHAR"}
         # Fin de asignación de datos de campos ===================
         for item in self.cursor.description:
             campo = item[0]
@@ -109,68 +83,84 @@ class Tabla(Datos):
                 tipo = tipos[item[1]]
             else:
                 tipo = str(item[1])
-            datos = {"tipo":tipo, "muestra":item[2], "longitud":item[3],
-                "decimales":item[5], "nulo":item[6]}
+            datos = {"tipo": tipo, "muestra": item[2], "longitud": item[3],
+                     "decimales": item[5], "nulo": item[6]}
             self.campos[campo] = datos
             # poner nombres de campos en self.registro
             # Esta hecho así para que existan nombres a pesar de que la tabla
             # esté vacía
+
     def nuevo(self):
         """Poner un nuevo registro con valores nulos"""
         for item in self.campos:
             self.registro[item] = None
+
     def insertar(self):
         """inserta una lista de campos en una tabla"""
-        sql = 'INSERT INTO ' + self.tabla + ' SET '
+        sql = 'INSERT INTO ' + self.tabla + ' ('
+        valores = ' VALUES ('
         for campo in self.registro:
-            if self.registro[campo] != None:
+            valor = self.registro[campo]
+            if valor is None:
+                continue
+            if self.registro[campo] is not None:
                 # Ojo: Mysql Levanta un WARNING si el registro que se va a
                 # insertar - excluye un campo que no tiene valor DEFAULT
-                if type(self.registro[campo]) != "str":
+                if not isinstance(self.registro[campo], str):
                     reg = str(self.registro[campo])
                 else:
-                    reg = self.registro[campo]
+                    reg = "'" + self.registro[campo] + "'"
                 if not self.insertar_clave:
                     if campo != self.clave and self.campos[campo]["tipo"] != "TIMESTAMP":
                         # Excluir de la inserción campos CLAVE y TIMESTAMP
-                        sql = sql + " " + campo + " = '" + reg + "',"
+                        # sql = sql + " " + campo + " = '" + reg + "',"
+                        sql = sql + " " + campo + ","
+                        valores = valores + reg + ","
                 else:
-                    sql = sql + " " + campo + " = '" + reg + "',"
-        sql = sql[0:-1] + " "
-        self.ejecutar(sql)
+                    sql = sql + " " + campo + ","
+                    valores = valores + reg + ","
+        sql = sql[0:-1] + ")"
+        valores = valores[0:-1] + ")"
+        self.ejecutar(sql + valores)
         self.id_insertada = self.cursor.lastrowid
+
     def actualizar(self):
         """Actualiza una lista de campos en una tabla"""
         sql = 'UPDATE ' + self.tabla + " SET "
         for campo in self.registro:
             if campo != self.clave:
-                if type(self.registro[campo]) != "str":
-                    valor = str(self.registro[campo])
-                else:
+                if isinstance(self.registro[campo], str):
                     valor = self.registro[campo]
+                else:
+                    valor = str(self.registro[campo])
                 sql = sql + " " + campo + " = '" + valor + "',"
         sql = sql[0:-1] + " "
-        if type(self.registro[self.clave]) != "str":
+        if not isinstance(self.registro[self.clave], str):
             llave = str(self.registro[self.clave])
         else:
             llave = self.registro[self.clave]
         sql = sql + " WHERE " + self.clave + " = '" + llave + "'"
         self.ejecutar(sql)
+        self.id_insertada = 0
 
     def ir_a(self, valor):
         """Equivalente al SEEK() de dBase, busca por campo indexado"""
-        if type(valor) != "str":
-            svalor = str(valor)
-        else:
+        if valor is None:
+            self.encontrado = False
+            return
+        if isinstance(valor, str):
             svalor = valor
-        self.filtro = self.clave + " = '" + svalor + "'"
+            self.filtro = self.clave + " = '" + svalor + "'"
+        else:
+            svalor = str(valor)
+            self.filtro = self.clave + " = " + svalor
         self.filtrar()
 
     def asignar_datos(self, sql):
         """Asigna el resultado de ejecutar sql a RESULTADO, REGISTRO y ENCONTRADO"""
         self.cursor.execute(sql)
         self.resultado = self.cursor.fetchall()
-        if len(self.resultado) == 0:
+        if not self.resultado:
             self.encontrado = False
             self.num_filas = 0
         else:
@@ -183,15 +173,17 @@ class Tabla(Datos):
                 fila = self.cursor.fetchone()
                 for item in self.registro:
                     self.registro[item] = fila[item]
-            except MySQLdb.Error ,  e:
-                self.error(e)
-    def buscar(self, campo, valor, operador = " = "):
+            except RuntimeError as error:
+                # Except MySQLdb.Error as e:
+                print(error)
+
+    def buscar(self, campo, valor, operador="="):
         """Equivalente a SEARCH de dBase, busca un VALOR por cualquier CAMPO"""
-        if type(valor)!= "str":
-            svalor = str(valor) # si valor no es tipo string, convertirlo en uno
+        if isinstance(valor, str):
+            svalor = "'" + valor + "'"
         else:
-            svalor = valor
-        sql = "SELECT * FROM " + self.tabla + " WHERE " + campo + operador + "'" + svalor + "'"
+            svalor = str(valor)  # si valor no es tipo string, convertirlo en uno
+        sql = "SELECT * FROM " + self.tabla + " WHERE " + campo + operador + svalor
         # agregar posibilidad de ORDEN
         if self.orden != "":
             sql = sql + " ORDER BY " + self.orden
@@ -212,12 +204,18 @@ class Tabla(Datos):
         if self.limite != "":
             sql = sql + " LIMIT " + str(self.limite) + " "
         self.asignar_datos(sql)
+
     def borrar(self, key):
         """Borra un registro proporcionando el valor de la clave"""
-        sql = "DELETE FROM " + self.tabla + " WHERE " + self.clave + " = '" + key + "'"
+        if isinstance(key, str):
+            sql = "DELETE FROM " + self.tabla + " WHERE " + self.clave + " = '" + key + "'"
+        elif isinstance(key, int):
+            sql = "DELETE FROM " + self.tabla + " WHERE " + self.clave + " = " + str(key)
+        else:
+            sql = "DELETE FROM " + self.tabla + " WHERE " + self.clave + " = '" + key + "'"
         self.ejecutar(sql)
 
-    def borrar_busqueda(self, campo , operador, valor):
+    def borrar_busqueda(self, campo, operador, valor):
         """borra uno mas registros proporcionando un campo, una condicion y un valor"""
         sql = "DELETE FROM " + self.tabla + " WHERE " + campo + operador + "'" + valor + "'"
         self.ejecutar(sql)
@@ -232,6 +230,21 @@ class Tabla(Datos):
         sql = "TRUNCATE TABLE " + self.tabla
         self.ejecutar(sql)
 
-if __name__ == "__main__":
-    print "Para usar solo como módulo"
+    def obtener(self, campo, numeroid):
+        """A partir de una ID devuelve el valor del campo encontrado"""
+        self.ir_a(numeroid)
+        if self.registro[campo]:
+            return self.registro[campo]
+        return "S/D"
 
+    def cargar_datos(self, formulario):
+        """carga datos a la tabla a partir de un formulario web (bottle)"""
+        for item in self.registro:
+            if item == self.clave:
+                continue
+            # Si no lo hago así, no registra UNICODE
+            self.registro[item] = getattr(formulario, item)
+
+
+if __name__ == "__main__":
+    print("Para usar solo como módulo")
