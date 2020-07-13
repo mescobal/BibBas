@@ -1,89 +1,86 @@
 #!/usr/bin/env python3
 # (c) CC Marcelo Escobal
-# Version 5.30
+# Version 0.7.6 arreglo min y max de fechas IMPORTANTE!
 """Conjunto de rutinas para generar codigo html."""
-from __future__ import print_function
-import http.cookies
-import os
 import re
-
 from lib import funciones
 
 PRINCIPAL = "emovil.py"
 IMG_LOGO = "logo.png"
 
-# ========================================
-# Navegación
+# Formulario ================================================
 
 
-def redirigir(url):
-    """Redirige usando javascript a otra pagina"""
-    texto = 'window.location = "' + url + '";'
-    return script(texto, "text/javascript")
-
-
-def ir_a_pagina(pagina):
-    """Manda navegador a una url."""
-    cadena = inicio()
-    cadena += "<html>\n<body>\n"
-    cadena += "<form id='autolog' action='%s' method='post'>\n</form>" % pagina
-    cadena += "<script language='JavaScript' type: 'text/javascript'>\n"
-    cadena += "document.getElementById('autolog').submit();"
-    cadena += "</script>\n"
-    return cadena
-
-
-# Con impresión
-def input_password(texto, campo, valor, ancho=60):
-    """Entrada de clave."""
-    cadena = "<div class='field'>"
+def etiqueta_campo(texto: str) -> str:
+    cadena = "<div class='field-label'>"
     cadena += "<label class='label'>%s</label>" % texto
-    cadena += "<div class='control has-icons-left'>"
-    cadena += "<input class='input' type='password' placeholder='%s' name='%s'" % (texto, campo)
-    cadena += " value='%s'  id='%s' size='%s'>" % (valor, campo, ancho)
-    cadena += "<span class='icon is-small is-left'>"
-    cadena += "<i class='fas fa-lock'></i></span>"
-    cadena += '</div></div>'
+    cadena += "</div>"
     return cadena
 
 
-def titulares(titulo, subtitulo=''):
-    """Encabezado nivel 1."""
-    cadena = "<div id='main'>\n"
-    cadena += "<div class='header'><h1>%s</h1>\n" % titulo
-    if subtitulo != '':
-        cadena += "<h2>%s</h2>\n" % subtitulo
-    cadena += '</div>'
+def campo(texto: str, tipo="") -> str:
+    # H es horizontal, G es grupo
+    if tipo == "H":
+        str_tipo = "field is-horizontal"
+    elif tipo == "G":
+        str_tipo = "field is-grouped"
+    else:
+        str_tipo = "field"
+    cadena = "<div class='%s'>%s" % (str_tipo, texto)
+    cadena += "</div>\n"
     return cadena
 
 
-def botones(url):
+def cuerpo_campo(texto: str) -> str:
+    cadena = "<div class='field-body'>%s" % texto
+    cadena += "</div>\n"
+    return cadena
+
+
+def control(texto: str) -> str:
+    cadena = "<div class='control'>%s" % texto
+    cadena += "</div>\n"
+    return cadena
+
+
+def entrada(tipo, texto, campo_bdd, valor):
+    cadena = "<input class='input' type='%s' placeholder='%s' " % (tipo, texto)
+    cadena += "name='%s' value='%s' id='%s'>" % (campo_bdd, valor, campo_bdd)
+    return cadena
+
+
+def input_password(texto: str, campo_bdd: str, valor: str) -> str:
+    """Entrada de clave."""
+    cadena = etiqueta_campo(texto)
+    cadena += cuerpo_campo(control(entrada("password", texto, campo_bdd, valor)))
+    return campo(cadena, "H")
+
+
+def botones(url: str) -> str:
     """Imprime boton de enviar formulario con texto = Aceptar."""
-    cadena = "<div class='field is-grouped'>\n"
-    cadena += "<div class='control'>\n"
-    cadena += "<button type='submit' class='button is-link'>Aceptar</button>\n"
-    cadena += '</div>\n'
+    cadena = etiqueta_campo("")
+    cadena += control("<button type='submit' class='button is-link'>Aceptar</button>")
     cadena += "<div class='control'>\n"
     cadena += "<button type='reset' class='button is-light'"
     cadena += " onClick=\"window.location.href='%s'\">Cancelar</button>\n" % url
-    cadena += "</div>\n</div>\n"
-    return cadena
+    cadena += "</div>\n"
+    return campo(cadena, "G")
 
 
-def botones_formulario(texto_aceptar="Aceptar", url_cancelar=""):
+def botones_formulario(texto_aceptar="Aceptar", url_cancelar="") -> str:
     """Imprime boton de enviar formulario con texto = Aceptar."""
-    cadena = "<div class='field is-grouped'>\n"
+    cadena = etiqueta_campo("")
     cadena += "<div class='control'>\n"
     cadena += "<button type='submit' class='button is-link'>" + texto_aceptar + "</button>\n"
     cadena += '</div>\n'
     cadena += "<div class='control'>\n"
     cadena += "<button type='reset' class='button is-light'"
     cadena += " onClick=\"window.location.href='%s'\">Cancelar</button>\n" % url_cancelar
-    cadena += "</div>\n</div>\n"
-    return cadena
+    cadena += "</div>\n"
+    return campo(cadena, "G")
 
 
-def combo(listado, variable, defecto):
+def combo(listado, variable: str, defecto) -> str:
     """Combo box con listado como opciones y texto x defecto."""
     cadena = "<div class ='select'><select name='" + variable + "' id='" + variable + "' >\n"
     for item in listado:
@@ -95,39 +92,29 @@ def combo(listado, variable, defecto):
     return cadena
 
 
-def estilo(cascade="/css/bulma.css"):
-    """Imprime un link a hoja de estilo con una predeterminada."""
-    return '<link type="text/css" href="' + cascade + '" rel="stylesheet" />'
-
-
-def fin_pagina():
+def fin_pagina() -> str:
     """Tags de finalizacion de una pagina."""
     return '</div></div></body></html>'
 
 
-def fin_tabla():
+def fin_tabla() -> str:
     """Imprime tags de finalizacion de una tabla."""
     return '</tbody></table>'
 
 
-def form_edicion(texto, accion):
+def form_edicion(texto: str, accion: str) -> str:
     """Pone un formulario de edicion, encabezado."""
     cadena = "<h2 class='subtitle'>%s</h2>" % texto
     cadena += "<form action='%s' method='post'>" % accion
     return cadena
 
 
-def form_edicion_fin():
+def form_edicion_fin() -> str:
     """Finalización de form de edición."""
     return '</form>'
 
 
-def formulario(accion):
-    """Imprime el encabezado de un formulario."""
-    print("<form action='%s' method='POST'>" % accion)
-
-
-def inicio():
+def inicio() -> str:
     """Imprime encabezado de pagina web SIN cookie."""
     cadena = 'Content-Type: text/html; charset=utf-8\n\n'
     cadena += "<!DOCTYPE html>"
@@ -135,65 +122,137 @@ def inicio():
     return cadena
 
 
-def input_combo(texto, campo, resultado, campos, valor):
+def input_texto(texto, campo_bdd, valor):
+    """Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar"""
+    cadena = etiqueta_campo(texto)
+    cadena += cuerpo_campo(campo(control(entrada("text", texto, campo_bdd, valor))))
+    return campo(cadena, "H")
+
+
+def input_texto_1(texto, campo_bdd, valor):
+    """Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar"""
+    # cadena = "<div class='field is-grouped is-horizontal'>"
+    cadena = "<div class='field is-horizontal is-grouped'>"
+    cadena += etiqueta_campo(texto)
+    cadena += cuerpo_campo(campo(control(entrada("text", texto, campo_bdd, valor))))
+    return cadena
+
+
+def input_texto_2(texto, campo_bdd, valor):
+    """Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar"""
+    cadena = etiqueta_campo(texto)
+    cadena += cuerpo_campo(campo(control(entrada("text", texto, campo_bdd, valor))))
+    cadena += "</div>"
+    return cadena
+
+
+def input_memo(texto: str, campo_bdd: str, valor: str) -> str:
+    """Imprime una linea con una celda con texto y otra con un campo memo"""
+    if valor is None:
+        valor = ""
+    cadena = etiqueta_campo(texto)
+    ctrl = "<textarea class='textarea' name='%s' placeholder='%s'>%s</textarea>" % (campo_bdd, texto, valor)
+    cadena += cuerpo_campo(campo(control(ctrl)))
+    return campo(cadena, "H")
+
+
+def input_combo(texto: str, campo_bdd: str, resultado, campos, valor) -> str:
     """Linea con celda con texto y otra con combobox."""
-    cadena = "<div class='field'>\n"
-    cadena += "<label class='label'>%s</label>" % texto
-    cadena += "<div class='control'>\n"
-    cadena += "<div class ='select'>\n<select name='%s' id='%s'>\n" % (campo, campo)
+    cad_1 = etiqueta_campo(texto)
+    cadena = "<div class='control'>\n"
+    cadena += "<div class ='select'>\n<select name='%s' id='%s'>\n" % (campo_bdd, campo_bdd)
     if valor == '':
-        cadena += '<option value="" selected="selected">Sin datos</option>\n'
+        cadena += "<option value='' selected='selected'>Sin datos</option>\n"
     for fil in resultado:
-        cadena += '<option value="' + str(fil[campos[0]]) + '" '
+        cadena += "<option value='" + str(fil[campos[0]]) + "' "
         if str(fil[campos[0]]) == str(valor):
-            cadena += 'selected="selected"'
+            cadena += "selected='selected'"
+            # cadena += ' selected'
         cadena += '>' + str(fil[campos[1]]) + '</option>\n'
-    cadena += "</select></div>\n</div>\n</div>\n"
+    cadena += "</select></div>\n</div>\n"
+    cad_1 += cuerpo_campo(campo(cadena))
+    return campo(cad_1, "H")
+
+
+def input_combo_1(texto: str, campo_bdd: str, resultado, campos, valor) -> str:
+    """Linea con celda con texto y otra con combobox. para poner lado a lado"""
+    cadena = "<div class='field is-horizontal'>"
+    cadena += etiqueta_campo(texto)
+    cadena += "<div class='field-body'>"
+    cadena += "<div class='field is-expanded'>\n"
+    cadena += "<p class='control is-expanded'>\n"
+    cadena += "<div class ='select is-fullwidth'>\n<select name='%s' id='%s'>\n" % (campo_bdd, campo_bdd)
+    if valor == '':
+        cadena += "<option value='' selected='selected'>Sin datos</option>\n"
+    for fil in resultado:
+        cadena += "<option value='" + str(fil[campos[0]]) + "' "
+        if str(fil[campos[0]]) == str(valor):
+            cadena += "selected='selected'"
+            # cadena += ' selected'
+        cadena += '>' + str(fil[campos[1]]) + '</option>\n'
+    cadena += "</select></div>\n"
+    cadena += "</p>\n</div>\n</div>\n"
     return cadena
 
 
-def input_fecha(texto, campo, valor):
+def input_combo_2(texto: str, campo_bdd: str, resultado, campos, valor) -> str:
+    """Linea con celda con texto y otra con combobox. para poner lado a lado"""
+    cadena = "<div class='field-label is-normal'><label class='label'>%s</label></div>" % texto
+    cadena += "<div class='field-body'>\n"
+    cadena += "<div class='field is-expanded'>\n"
+    cadena += "<p class='control is-expanded'>\n"
+    cadena += "<div class ='select is-fullwidth'>\n<select name='%s' id='%s'>\n" % (campo_bdd, campo_bdd)
+    if valor == '':
+        cadena += "<option value='' selected='selected'>Sin datos</option>\n"
+    for fil in resultado:
+        cadena += "<option value='" + str(fil[campos[0]]) + "' "
+        if str(fil[campos[0]]) == str(valor):
+            cadena += "selected='selected'"
+            # cadena += ' selected'
+        cadena += '>' + str(fil[campos[1]]) + '</option>\n'
+    cadena += "</select></div>\n"
+    cadena += "</p>\n</div></div>\n"
+    cadena += "</div>\n"
+    return cadena
+
+
+def input_fecha(texto: str, campo_bdd: str, valor) -> str:
     """Crea celdas contiguas con texto y campo de texto."""
-    # fecha = funciones.sql_a_fecha(valor)
-    cadena = "<div class='field'>\n"
-    cadena += "<label class='label'>%s</label>\n" % texto
-    cadena += "<div class='control'>\n"
-    cadena += "<input class='input' type='date' placeholder='%s' " % texto
-    cadena += "name='%s' value='%s' id='%s'>\n" % (campo, valor, campo)
-    cadena += "</div>\n</div>\n"
-    return cadena
+    cadena = etiqueta_campo(texto)
+    entrada = "<input class='input' type='date' placeholder='dd/mm/aaaa' "
+    entrada += "min='1920-01-01' max='2120-12-31' "
+    # pattern = "(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d"
+    # entrada += "name='%s' value='%s' id='%s' pattern='%s'>" % (campo_bdd, valor, campo_bdd, pattern)
+    entrada += "name='%s' value='%s' id='%s'>\n" % (campo_bdd, valor, campo_bdd)
+    cadena += cuerpo_campo(campo(control(entrada)))
+
+    return campo(cadena, "H")
 
 
-def input_hora(texto, campo, valor):
-    cadena = "<div class='field'>\n"
-    cadena += "<label class='label'>%s</label>\n" % texto
-    cadena += "<div class='control'>\n"
-    cadena += "<input class='input' type='time' placeholder='%s' " % texto
-    cadena += "name='%s' value='%s' id='%s'>\n" % (campo, str(valor), campo)
-    cadena += "</div>\n</div>\n"
-    return cadena
+def input_hora(texto, campo_bdd, valor):
+    cadena = etiqueta_campo(texto)
+    cadena += cuerpo_campo(campo(control(entrada("time", texto, campo_bdd, valor))))
+    return campo(cadena, "H")
 
 
-def input_numero(texto, campo, valor, decimales=2):
+def input_numero(texto, campo_bdd, valor, decimales=2):
     """Imprime un campo de ingreso de valor numerico"""
-    if not isinstance(texto, str):
-        tex = str(texto)
-    else:
-        tex = texto
     if isinstance(valor, str):
         if valor == "":
             valor = "0"
     numero = funciones.numero(valor, decimales)
-    cadena = "<div class='field'>"
-    cadena += "<label class='label'>%s</label>" % tex
-    cadena += "<div class='control'>"
-    cadena += "<input class='input' type='number' placeholder='%s' " % tex
-    cadena += "name='%s' value='%s' id='%s'>" % (campo, numero, campo)
-    cadena += "</div></div>"
-    return cadena
+    cadena = etiqueta_campo(texto)
+    if decimales is None:
+        escalon = 0
+    else:
+        escalon = "0." + "1".rjust(decimales, "0")
+    inp_num = "<input class='input' type='number' placeholder='%s' step='%s' " % (texto, escalon)
+    inp_num += "name='%s' value='%s' id='%s'>" % (campo_bdd, numero, campo_bdd)
+    cadena += cuerpo_campo(campo(control(inp_num)))
+    return campo(cadena, "H")
 
 
-def input_entero(texto, campo, valor, minimo=None, maximo=None):
+def input_entero(texto, campo_bdd, valor, minimo=None, maximo=None):
     """Imprime un campo de ingreso de valor numerico"""
     if not isinstance(texto, str):
         tex = str(texto)
@@ -203,9 +262,8 @@ def input_entero(texto, campo, valor, minimo=None, maximo=None):
         if valor == "":
             valor = "0"
     numero = funciones.numero(valor)
-    cadena = "<div class='field'>"
-    cadena += "<label class='label'>%s</label>" % tex
-    cadena += "<div class='control'>"
+    cdn_2 = etiqueta_campo(tex)
+    cadena = "<div class='control'>"
     cadena += "<input class='input' type='number' "
     if minimo is not None:
         minimo = str(int(minimo))
@@ -213,9 +271,69 @@ def input_entero(texto, campo, valor, minimo=None, maximo=None):
     if maximo is not None:
         maximo = str(int(maximo))
         cadena += "max=%s " % maximo
-    cadena += "name='%s' value='%s' id='%s'>" % (campo, numero, campo)
-    cadena += "</div></div>"
+    cadena += "name='%s' value='%s' id='%s' step='1'>" % (campo_bdd, numero, campo_bdd)
+    cadena += "</div>"
+    cdn_3 = cdn_2 + cuerpo_campo(cadena)
+    return campo(cdn_3, "H")
+
+
+def input_check(texto: str, variable: str, valor) -> str:
+    """Imprime 2 celdas, una con texto y otra con un checkbox"""
+    adicional = ""
+    if valor is None or valor == "":
+        val = 0
+    elif isinstance(valor, int):
+        val = valor
+    else:
+        val = int(valor)
+    if val > 0:
+        adicional = "checked"
+    cadena = etiqueta_campo(texto)
+    # cadena = "<div class='field'><label class='checkbox'>"
+    # cadena += "<INPUT TYPE='checkbox' NAME='" + variable + "' VALUE='1' " + adicional + ">%s" % texto
+    # cadena += "</label></div>"
+    chk = "<INPUT TYPE='checkbox' NAME='" + variable + "' VALUE='1' " + adicional + ">"
+    cadena += cuerpo_campo(campo(control(chk)))
+    return campo(cadena, "H")
+
+
+def input_check_1(texto: str, variable: str, valor) -> str:
+    cadena = "<div class='field is-horizontal is-grouped'>"
+    adicional = ""
+    if valor is None or valor == "":
+        val = 0
+    elif isinstance(valor, int):
+        val = valor
+    else:
+        val = int(valor)
+    if val > 0:
+        adicional = "checked"
+    cadena += etiqueta_campo(texto)
+    chk = "<INPUT TYPE='checkbox' NAME='" + variable + "' VALUE='1' " + adicional + ">"
+    cadena += cuerpo_campo(campo(control(chk)))
     return cadena
+
+
+def input_check_2(texto: str, variable: str, valor) -> str:
+    adicional = ""
+    if valor is None or valor == "":
+        val = 0
+    elif isinstance(valor, int):
+        val = valor
+    else:
+        val = int(valor)
+    if val > 0:
+        adicional = "checked"
+    cadena = etiqueta_campo(texto)
+    chk = "<INPUT TYPE='checkbox' NAME='" + variable + "' VALUE='1' " + adicional + ">"
+    cadena += cuerpo_campo(campo(control(chk)))
+    cadena += "</div>"
+    return cadena
+
+
+def linea_dato(texto: str, dato) -> str:
+    """Imprime una linea con 2 celdas: una con un texto y otra con un dato"""
+    return "<tr><td>%s</td><td>%s</td></tr>" % (texto, str(dato))
 
 
 def linea_numero(texto, decimales=2):
@@ -264,10 +382,12 @@ def encabezado(nivel, texto):
 
 def encabezado_completo(titulo, referencia):
     """ Imprime encabezado con logo y boton de retorno"""
-    cadena = "<head>\n"
+    cadena = "<!DOCTYPE html>\n"
+    cadena += "<html lang='es'>"
+    cadena += "<head>\n"
     cadena += "<meta charset='utf-8' />\n"
     cadena += "<title>%s</title>\n" % titulo
-    cadena += estilo()
+    cadena += "<link type='text/css' href='/css/bulma.css' rel='stylesheet' />"
     cadena += "</head>\n"
     cadena += '<body>\n'
     cadena += "<div class='section'><div class='container'>\n"
@@ -289,6 +409,15 @@ def load_script(tipo="text/javascript", src='', charset="utf-8"):
 # ========================================
 # Conversión de tags HTML
 # ========================================
+
+# BOTONES ===========================
+
+def boton_accion(titulo, accion, icono):
+    """Pone un boton titulado TITULO con ICONO y ACCION"""
+    cadena = "<a href='%s' title='%s'>" % (accion, titulo)
+    cadena += "<img src='/img/%s.png' width='24' height='24' border='0'></a>" % icono
+    return cadena
+
 
 def boton_ambulancia(accion):
     """Pone un boton con imagen ambulancia"""
@@ -340,8 +469,10 @@ def boton_actualizar(accion):
 
 def boton_grafica(accion):
     """Pone un boton para ver un gráfico"""
-    return enlace(accion, img('/img/chart.png', 24, 24, 0), 'G ráfica')
+    return enlace(accion, img('/img/chart.png', 24, 24, 0), 'Gráfica')
 
+
+# ========================================================
 
 def celda_menu(texto, enl, icono, ayuda=""):
     """Pone una celda del menu"""
@@ -373,7 +504,7 @@ def imagen(imag):
 
 def encabezado_tabla(arr):
     """A partir de un array arma el encabezado de una tabla"""
-    cadena = '<table class="table"><thead><tr>\n'
+    cadena = '<table class="table is-hoverable"><thead><tr>\n'
     for lin in arr:
         cadena += celda_encabezado(lin)
     cadena += '</tr>\n</thead>\n<tbody>\n'
@@ -388,57 +519,6 @@ def campo_oculto(variable, dato):
 def fin_formulario():
     """Termina el formulario"""
     return '</form>'
-
-
-def input_input(tipo, nombre, valor=''):
-    """Imprime un campo tipo INPUT"""
-    print('<input type="' + tipo + '" name="' + nombre + '" value="' + valor + '"></input>')
-
-
-def input_check(texto, variable, valor):
-    """Imprime 2 celdas, una con texto y otra con un checkbox"""
-    adicional = ""
-    if valor is None or valor == "":
-        val = 0
-    elif isinstance(valor, int):
-        val = valor
-    else:
-        val = int(valor)
-    if val > 0:
-        adicional = "checked"
-    cadena = '<TR>'
-    cadena += celda(texto)
-    cadena += celda("<INPUT TYPE='checkbox' NAME='" + variable + "' VALUE='1' " + adicional + ">")
-    cadena += "</tr>"
-    return cadena
-
-
-def fila_alterna(i):
-    """Genera colores alternos para filas de una tabla"""
-    if (i % 2) == 0:
-        print("<tr>")
-    else:
-        print("<tr class='odd'>")
-
-
-def fila_lista():
-    """Genera fila para listado de datos"""
-    print("<tr class='fila_datos'>")
-
-
-def imagen_menu(imag, enl, texto):
-    """Imprime una celda con una imagen, enlace y texto"""
-    print('<td align="center"><a href="' + enl + '"><img src="/img/' + imag +
-          '" align="top" border="0"></a></br>' + texto + '</td>')
-    # imag  + '" width="64" height="64" align="top" border="0"></a></br>' +
-
-
-def duplicado(pag):
-    """Genera html de error por existencia de duplicado"""
-    texto = 'Ya existe un dato igual al que usted intenta agregar.'
-    texto = texto + ' Verifique el dato e inténtelo nuevamente'
-    nota(texto)
-    print(button('Volver', pag))
 
 
 def navegador(este_archivo, pagina_actual, total_paginas):
@@ -475,17 +555,7 @@ def navegador(este_archivo, pagina_actual, total_paginas):
         sig = " "
         ult = " "
     print("<center class='barra'>" + prim + prev + nav + sig + ult + "</center>")
-
 # ===============================================================================
-
-
-def boton_confirmar(texto, leyenda, accion):
-    """Pone un boton con un TEXTO que saca diálogo para confirmar"""
-    action = "if(confirm(\"{0}\")) window.location=\"{1}\";".format(leyenda, accion)
-    cadena = "<input type='button' value='" + texto + "' "
-    cadena = cadena + "onClick='" + action + "' "
-    cadena = cadena + "/>"
-    print(cadena)
 
 
 def boton_detalles(accion):
@@ -508,57 +578,6 @@ def boton_editar(accion):
     return enlace(accion, img("/img/editar.png", 24, 24, 0), 'Editar')
 
 
-def fila_resaltada():
-    """Fila sobreiluminada"""
-    print("<tr class='fila_datos'>")
-
-
-def fila_datos(texto, datos):
-    """Imprime una hilera con 2 celdas: una de texto y otra de datos"""
-    datos = str(datos)
-    print(fila(celda(texto) + celda(datos)))
-
-
-def input_texto(texto, campo, valor, ancho=60):
-    """Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar"""
-    cadena = "<div class='field'>\n"
-    cadena += "<label class='label'>%s</label>" % texto
-    cadena += "<div class='control'>\n"
-    cadena_2 = "<input class='input' type='text' placeholder='%s' name='%s' "
-    cadena_2 += "value='%s' id='%s' size='%s'>"
-    cadena += cadena_2 % (texto, campo, valor, campo, ancho)
-    cadena += "</div>\n</div>\n"
-    return cadena
-
-
-def input_disabled(texto, campo, valor, ancho=60):
-    """Imprime celda con texto y texto, muestra un campo no modificable"""
-    print(fila(celda(texto + celda(text(campo, valor, ancho, disabled=True)))))
-
-
-def input_label(texto1, texto2):
-    """Imprime 2 celdas adyacentes en 1 fila ambas con texto"""
-    print(fila(celda(texto1) + celda(texto2)))
-
-
-def input_memo(texto, campo, valor):
-    """Imprime una linea con una celda con texto y otra con un campo memo"""
-    if valor is None:
-        valor = ""
-    return fila(celda(texto) + celda(textarea(valor, campo)))
-
-
-def leer_cookie():
-    """Lee una cookie presente en la sesion"""
-    coo = http.cookies.SimpleCookie(os.environ.get("HTTP_COOKIE", ""))
-    return coo
-
-
-def linea_moneda(texto):
-    """Imprime una celda con un valor monetario adentro"""
-    print(celda(funciones.moneda(texto), "right"))
-
-
 def celda_moneda(texto):
     """Imprime una celda con un valor monetario adentro"""
     print(celda(funciones.moneda(texto), "right"))
@@ -569,7 +588,7 @@ def nota(texto):
     return table(fila(celda(span(texto, "nota"))))
 
 
-def texto_barra(texto):
+def texto_barra(texto: str) -> str:
     """Imprime un texto blanco"""
     return "<div class='texto_barra'>" + texto + "</div>"
 
@@ -605,15 +624,6 @@ def retroceso(referencia):
     cadena += referencia + "'>Volver</a>"
     return cadena
 
-# def input_fechahora(texto, campo_fecha, campo_hora, valor_fecha, valor_hora)
-#   valor_fecha = '' if valor_fecha.nil?
-#   valor_hora = '' if valor_hora.nil?
-#   puts "<tr><td>#{texto}</td>"
-#   "<td>Fecha:<input id='#{campo_fecha}' type='date' value='#{valor_fecha}' name='#{campo_fecha}'>"
-#   puts " - Hora:<input id='#{campo_hora}' type='time' value='#{valor_hora}'
-# name='#{campo_hora}'></td></tr>"
-# end
-
 # def input_decimal(texto, campo, valor)
 #   valor = '' if valor.nil?
 #   puts "<tr><td>#{texto}</td>"
@@ -634,18 +644,6 @@ def enlace(enl, texto, titulo=''):
     return cadena.format(str(enl), str(texto))
 
 
-def negrita(texto):
-    """Tag html"""
-    cadena = "<b>{0}</b>"
-    return cadena.format(texto)
-
-
-def body(contenido):
-    """HTML TAG"""
-    cadena = "<body>" + contenido + "</body>"
-    return cadena
-
-
 def boton(texto, referencia, clase="link"):
     """Devuelve un boton - texto con estilo CSS"""
     return "<a class='button is-" + clase + "' " + "href='" + referencia + "'>" + texto + "</a>"
@@ -653,46 +651,10 @@ def boton(texto, referencia, clase="link"):
 
 def button(texto, action, style='link'):
     """boton con acción"""
-    # cadena = "<input type='button' value='" + texto + "' "
-    # cadena = cadena + "onClick=\"parent.location='" + action + "'\" "
-    # if style != "":
-    #     cadena = cadena + " style='" + style + "'"
-    # cadena = cadena + "/>"
     cadena = "<a class='button is-%s' href='%s'> " % (style, action)
     cadena += texto
     cadena += "</a>"
     return cadena
-
-
-def caption(texto):
-    """Tag html"""
-    cadena = "<caption>{0}</caption>"
-    return cadena.format(texto)
-
-
-def div(texto, clase=""):
-    """tag html"""
-    cadena = "<div "
-    if clase != "":
-        cadena = cadena + "class='" + clase + "'>"
-    else:
-        cadena = cadena + ">"
-    return cadena + texto + "</div>"
-
-
-def head(contenido):
-    """Encabezado de pagina web"""
-    return '<head>' + contenido + '</head>'
-
-
-def hidden(campo, valor):
-    """Tag Html"""
-    return "<input type='hidden' name='%s' value='%s'>" % (campo, valor)
-
-
-def linea_horizontal():
-    """Tag html"""
-    return '<hr />'
 
 
 def img(src, width=0, height=0, border=0):
@@ -704,18 +666,6 @@ def img(src, width=0, height=0, border=0):
         cadena = cadena + " height='" + str(height) + "' "
     cadena = cadena + " border='" + str(border) + "'>"
     return cadena
-
-
-def linea(texto):
-    """Tag html"""
-    cadena = "<li>{0}</li>"
-    return cadena.format(texto)
-
-
-def parrafo(texto):
-    """Tag html"""
-    cadena = "<p>{0}</p>"
-    return cadena.format(texto)
 
 
 def script(texto, typ="", src=""):
@@ -734,15 +684,6 @@ def span(contenido, clase=''):
         cadena = cadena + " class='" + clase + "'"
     cadena = cadena + ">{0}</span>"
     return cadena.format(contenido)
-
-
-def submit(valor="Enviar", style=""):
-    """Tag HTML"""
-    cadena = "<input type='submit' value='" + valor + "'"
-    if style != "":
-        cadena = cadena + "style='" + style + "'"
-    cadena = cadena + ">"
-    return cadena
 
 
 def table(content, width='', clase=''):
@@ -765,55 +706,19 @@ def celda(texto="", align='left', rowspan=1, colspan=1):
     return cadena
 
 
-def text(field, value, size=40, disabled=False):
-    """Html tag"""
-    dis = ""
-    if disabled:
-        dis = "disabled"
-    cadena = "<input {0} type='text' name='{1}' value='{2}' size='{3}'/>"
-    return cadena.format(dis, field, value, size)
-
-
-def textarea(value, field, rows=10, cols=100):
-    """Html tag"""
-    r_fila = str(rows)
-    c_columna = str(cols)
-    cadena = "<textarea name='" + field + "' rows='" + r_fila + "' cols='"
-    cadena += c_columna + "'>" + value + "</textarea>"
-    return cadena
-
-
-def tfoot(texto):
-    """Tag html"""
-    cadena = "<tfoot>{0}</tfoot>"
-    return cadena.format(texto)
-
-
-def celda_encabezado(texto):
+def celda_encabezado(texto: str) -> str:
     """Tag html"""
     cadena = "<th>{0}</th>"
     return cadena.format(texto)
 
 
-def title(texto):
-    """Tag html"""
-    cadena = "<title>{0}</title>"
-    return cadena.format(texto)
-
-
-def fila(texto=""):
+def fila(texto="") -> str:
     """Tag html"""
     cadena = "<tr>{0}</tr>"
     return cadena.format(texto)
 
 
-def lista(texto):
-    """Tag html"""
-    cadena = "<ul>{0}</ul>"
-    return cadena.format(texto)
-
-
-def limpiar_html(texto):
+def limpiar_html(texto: str) -> str:
     """limpia tags html de un texto"""
     # limpio = re.compile('<.*?>')
     mensaje = re.sub("<.*?>", '', texto)
@@ -827,9 +732,9 @@ def limpiar_html(texto):
     return mensaje
 
 
-def boton_play(accion):
+def boton_play(accion: str) -> str:
     return enlace(accion, img("/img/play.png", 24, 24, 0), "No visto")
 
 
-def boton_stop(accion):
+def boton_stop(accion: str) -> str:
     return enlace(accion, img("/img/stop.png", 24, 24, 0), "No visto")

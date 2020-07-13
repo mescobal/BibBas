@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ Para conectar a postgres
+version 0.6
 """
 import configparser
 import datetime

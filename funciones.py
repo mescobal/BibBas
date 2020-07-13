@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Funciones generales version 19.12 """
-from __future__ import print_function
+"""Funciones generales version 0.6.27 """
 import sys
 import cgitb
 import datetime
@@ -95,8 +94,8 @@ def entero_pelado(num):
 def str_to_float(cadena):
     cadena = cadena.replace(" ", "")
     # cadena = cadena.replace("-","")
-    cadena = cadena.replace ("$", "")
-    if cadena == '' or cadena is None or cadena=="-":
+    cadena = cadena.replace("$", "")
+    if cadena == '' or cadena is None or cadena == "-":
         return 0.00
     if cadena[0] == '(':
         cadena = cadena.replace("(", "")
@@ -105,9 +104,9 @@ def str_to_float(cadena):
     if cadena[-3:-2] == '.':
         # entonces remover coma como separador de miles
         cadena = cadena.replace(",", "")
-    elif cadena [-3:-2] == ',':
+    elif cadena[-3:-2] == ',':
         # sacar punto como separador de miles
-        cadena = cadena.replace(".","")
+        cadena = cadena.replace(".", "")
         # luego poner punto como separador decimal
         cadena = cadena.replace(",", ".")
     return float(cadena)
@@ -119,12 +118,6 @@ def decimal_pelado(num):
         if "," in num:
             num = num.replace(",", "")
     return float(num)
-
-
-def ano_actual():
-    """Devuelve año actual"""
-    ahora = datetime.datetime.now()
-    return ahora.year
 
 
 def moneda(num):
@@ -162,6 +155,14 @@ def nstr(item):
         return ''
     return str(item)
 
+# ===================== FECHA y HORA ======================
+
+
+def ano_actual():
+    """Devuelve año actual"""
+    aactual = datetime.datetime.now()
+    return aactual.year
+
 
 def sql_a_fecha(fecha):
     """Convierte fecha en formato mysql a legible"""
@@ -185,8 +186,24 @@ def sql_a_fecha(fecha):
 
 def iso_a_fecha(fecha):
     """Convierte fecha en formato iso a legible"""
-    fecharr = fecha.split("-")
-    return "%s/%s/%s" % (fecharr[2], fecharr[1], fecharr[0])
+    if isinstance(fecha,  str):
+        fecharr = fecha.split("-")
+        return "%s/%s/%s" % (fecharr[2], fecharr[1], fecharr[0])
+    elif isinstance(fecha,  datetime.date):
+        return fecha.strftime("%d/%m/%y")
+    else:
+        return ""
+
+
+def iso_a_datetime(fecha):
+    """convierte fecha ISO a datetime de python"""
+    if isinstance(fecha, str):
+        arrfecha = fecha.split("-")
+        return datetime.date(int(arrfecha[0]), int(arrfecha[1]), int(arrfecha[2]))
+    elif isinstance(fecha, datetime.date):
+        return fecha
+    else:
+        return ""
 
 
 def fecha_a_sql(fecha):
@@ -216,6 +233,44 @@ def fecha_a_sql(fecha):
     return fecha2
 
 
+def hoy():
+    """Devuelve el día de hoy en formato estándard"""
+    return datetime.date.today().strftime("%d/%m/%y")
+
+
+def hoy_iso():
+    """Devuelve el día de hoy en formato ISO"""
+    return datetime.date.today().strftime("%Y-%m-%d")
+
+
+def ahora():
+    """Devuelve la hora de hoy en formato HH:MM"""
+    return datetime.datetime.now().strftime("%H:%M")
+    
+
+def timestamp():
+    """Devuelve el TS actual en formato ISO"""
+    a = datetime.datetime.now()
+    return a.isoformat().replace("T", " ")
+
+
+def hms(ts):
+    if isinstance(ts,  datetime.datetime):
+        resultado = ts.strftime("%d/%m/%Y %H:%M:%S")
+    else:
+        resultado = ""
+    return resultado
+
+
+def sumar_anos(fecha, anos):
+    """devuelve una fecha sumando años, si llega a ser 19 de febrero
+    lo pasa a 1 de marzo"""
+    try:
+        return fecha.replace(year=fecha.year + anos)
+    except ValueError:
+        return fecha + (datetime.date(fecha.year + anos, 1, 1) - datetime.date(fecha.year, 1, 1))
+
+
 def numero(num, places=2, th_sep=False):
     """Format a number with grouped thousands and given decimal places"""
     if isinstance(num, str):
@@ -239,16 +294,6 @@ def numero(num, places=2, th_sep=False):
                 formatted.append(",")
         integer = "".join(formatted[::-1])
     return integer + deci
-
-
-def hoy():
-    """Devuelve el día de hoy en formato estándard"""
-    return datetime.date.today().strftime("%d/%m/%y")
-
-
-def hoy_iso():
-    """Devuelve el día de hoy en formato ISO"""
-    return datetime.date.today().strftime("%Y-%m-%d")
 
 
 def redondeo(cifra, digitos=0):
