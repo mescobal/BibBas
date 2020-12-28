@@ -1,20 +1,23 @@
 #!/usr/bin env python3
 """Librería para manejo de tablas
-Ver: 0.5-25"""
+Ver: 0.6.27 : elimino magik y lo saco aparte
+"""
 
+import datetime
 from lib import datos
 
 
-class Balancetes(datos.Tabla):
+class Actividades(datos.Tabla):
+    """Actividad del empleado"""
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "balancetes", "id", "emovil")
+        datos.Tabla.__init__(self, "sq3", "suactivi", "lifunid", "indicadores")
         if ident is not None:
             self.ir_a(ident)
 
 
-class CatClientes(datos.Tabla):
+class Balancetes(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "cat_clientes", "id", "clientes")
+        datos.Tabla.__init__(self, "sq3", "balancetes", "id", "contabilidad")
         if ident is not None:
             self.ir_a(ident)
 
@@ -26,6 +29,14 @@ class CatEmpleados(datos.Tabla):
             self.ir_a(ident)
 
 
+class Claves(datos.Tabla):
+    """Clave 1 2 3"""
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "claves", "id", "vehiculos")
+        if ident is not None:
+            self.ir_a(ident)
+
+
 class Clientes(datos.Tabla):
     def __init__(self, ident=None):
         datos.Tabla.__init__(self, "sq3", "clientes", "id", "clientes")
@@ -33,9 +44,16 @@ class Clientes(datos.Tabla):
             self.ir_a(ident)
 
 
+class CV(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "cv", "id", "empleados")
+        if ident is not None:
+            self.ir_a(ident)
+
+
 class Ejercicios(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "ejercicios", "id", "emovil")
+        datos.Tabla.__init__(self, "sq3", "ejercicios", "id", "contabilidad")
         if ident is None:
             self.ir_a(ident)
 
@@ -47,22 +65,11 @@ class Empleados(datos.Tabla):
             self.ir_a(ident)
 
 
-class Empresas(datos.Tabla):
+class Encuesta(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "pg", "empresas", "emprid", "magik")
+        datos.Tabla.__init__(self, "sq3", "encuesta", "id", "recepcion")
         if ident is not None:
             self.ir_a(ident)
-
-    def ver_telefono(self):
-        """Buscar telefono del registro actual"""
-        domref = self.registro["emprdomref"]
-        tele = Telefonos()
-        tele.filtro = "domicid = %s" % domref
-        tele.filtrar()
-        if tele.encontrado:
-            return tele.registro["domictel"]
-        else:
-            return "Desconocido"
 
 
 class EstadosVehiculos(datos.Tabla):
@@ -79,6 +86,20 @@ class EvolIndicadores(datos.Tabla):
             self.ir_a(ident)
 
 
+class Formacion(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "formacion", "id", "empleados")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class Guardias(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "guardias", "id", "empleados")
+        if ident is not None:
+            self.ir_a(ident)
+
+
 class Indicadores(datos.Tabla):
     def __init__(self, ident=None):
         datos.Tabla.__init__(self, "sq3", "indicadores", "id", "indicadores")
@@ -88,7 +109,22 @@ class Indicadores(datos.Tabla):
 
 class Llamadas(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "llamadas", "id", "clientes")
+        datos.Tabla.__init__(self, "sq3", "llamadas", "id", "recepcion")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class Llamados(datos.Tabla):
+    """Llamados clave 1, 2 y 3"""
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "llamados", "id", "recepcion")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class Locales(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "locales", "id", "sistema")
         if ident is not None:
             self.ir_a(ident)
 
@@ -100,34 +136,23 @@ class Localidades(datos.Tabla):
             self.ir_a(ident)
 
 
-class Personas(datos.Tabla):
+class Mantenimiento(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "pg", "persona", "perid", "magik")
+        datos.Tabla.__init__(self, "sq3", "mantenimiento", "id", "vehiculos")
         if ident is not None:
             self.ir_a(ident)
 
-    def ver_nombre(self, ident):
-        """#{fila['perape1']} #{fila['perape2']}, #{fila['pernom1']} #{fila ['pernom2']}"""
-        self.ir_a(ident)
-        nombre = self.registro["perape1"] + " " + self.registro["perape2"] + "," + \
-            self.registro["pernom1"] + " " + self.registro["pernom2"]
-        return nombre
 
-    def ver_telefono(self, ident):
-        self.ir_a(ident)
-        tele = Telefonos()
-        tele.filtro = "domicid = %s" % self.registro["perdomref"]
-        tele.filtrar()
-        if tele.registro["domictel"]:
-            telefono = tele.registro["domictel"]
-        else:
-            telefono = "Sin datos"
-        return telefono
+class PersonalTurno(datos.Tabla):
+    def __init__(self,  ident=None):
+        datos.Tabla.__init__(self,  "sq3", "personal_turno",  "id",  "recepcion")
+        if ident is not None:
+            self.ir_a(ident)
 
 
 class PlanCuentas(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "plancta", "id", "emovil")
+        datos.Tabla.__init__(self, "sq3", "plancta", "id", "contabilidad")
         if ident is not None:
             self.ir_a(ident)
 
@@ -146,9 +171,30 @@ class Proveedores(datos.Tabla):
             self.ir_a(ident)
 
 
+class ProvMantenimiento(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "prov_mantenimiento", "id", "vehiculos")
+        if ident is not None:
+            self.ir_a(ident)
+
+
 class Puntos(datos.Tabla):
     def __init__(self, ident=None):
         datos.Tabla.__init__(self, "sq3", "puntos", "id", "vehiculos")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class Registro(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "registro", "id", "usuarios")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class Suplentes(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "suplentes", "id", "empleados")
         if ident is not None:
             self.ir_a(ident)
 
@@ -160,9 +206,17 @@ class Tareas(datos.Tabla):
             self.ir_a(ident)
 
 
-class Telefonos(datos.Tabla):
+class TipoLlamado(datos.Tabla):
+    """Area protegida, socio, etc"""
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "pg", "domicil2", "domicid", "magik")
+        datos.Tabla.__init__(self, "sq3", "tipo_llamado", "id", "vehiculos")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class TiposMantenimiento(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "tipo_mantenimiento", "id", "vehiculos")
         if ident is not None:
             self.ir_a(ident)
 
@@ -176,23 +230,46 @@ class TiposProducto(datos.Tabla):
 
 class TipoTraslado(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "tipo_traslado", "id", "vehiculos")
+        datos.Tabla.__init__(self, "sq3", "tipo_traslado", "id", "recepcion")
         if ident is not None:
             self.ir_a(ident)
 
 
 class TipoTrayecto(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "tipo_trayecto", "id", "vehiculos")
+        datos.Tabla.__init__(self, "sq3", "tipo_trayecto", "id", "recepcion")
         if ident is not None:
             self.ir_a(ident)
 
 
 class Traslados(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "traslados", "id", "vehiculos")
+        datos.Tabla.__init__(self, "sq3", "traslados", "id", "recepcion")
         if ident is not None:
             self.ir_a(ident)
+
+
+class Turnos(datos.Tabla):
+    """0 a 6, 6 a 12, etc"""
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "turnos", "id", "sistema")
+        if ident is not None:
+            self.ir_a(ident)
+
+    @staticmethod
+    def turno_actual():
+        ahora = datetime.datetime.now()
+        hora = ahora.strftime("%H:%M:%S")
+        valor = None
+        if "00:00:00" <= hora < "06:00:00":
+            valor = 1
+        elif "06:00:00" <= hora < "12:00:00":
+            valor = 2
+        elif "12:00:00" <= hora < "18:00:00":
+            valor = 3
+        elif "18:00:00" <= hora <= "24:59:59":
+            valor = 4
+        return valor
 
 
 class Usuarios(datos.Tabla):
@@ -218,6 +295,7 @@ class Ventas(datos.Tabla):
 
 class Viajes(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "viajes", "id", "vehiculos")
+        datos.Tabla.__init__(self, "sq3", "viajes", "id", "recepcion")
         if ident is not None:
             self.ir_a(ident)
+

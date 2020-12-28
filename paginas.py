@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# pylint: disable=C0103
-
 """Conjunto de rutinas para generar una pagina"""
 import bottle
 import os
@@ -136,3 +133,15 @@ def no_coinciden(retorno):
     htm.inicio()
     htm.nota("Las claves no coinciden, no se realizó el cambio.")
     print(htm.button('Volver', retorno))
+
+
+@APP_PAGI.route("/no_disponible")
+def no_disponible():
+    """Pagina no disponible"""
+    retorno = bottle.request.query.retorno
+    if retorno is None or retorno == "":
+        retorno = "/"
+    cadena = htm.encabezado_completo("Página no disponible", retorno)
+    cadena += htm.nota("La página a la que quiere acceder aún no está creada")
+    cadena += htm.pie(retorno)
+    return cadena

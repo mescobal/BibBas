@@ -3,6 +3,7 @@
 Conexiones: librería con conexiones a sqlite e informix
 clases con cursoresy operaciones básicas sobre tablas
 @author: mescobal
+version 7.00
 """
 import logging
 import datetime
@@ -43,7 +44,6 @@ class Dbsqlite(object):
                 valor = valor.replace("'", "''")
                 valor = valor.replace('"', "''")
                 valor = htm.limpiar_html(valor)
-                valor = valor.decode("utf-8")
             else:
                 valor = str(valor)
             valores = valores + '"' + valor + '",'

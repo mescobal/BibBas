@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # (c) CC Marcelo Escobal
 # Version 0.7.6 arreglo min y max de fechas IMPORTANTE!
+# Versión 0.11 visulizar datos, combo sin campo de BDD
 """Conjunto de rutinas para generar codigo html."""
 import re
 from lib import funciones
@@ -80,9 +81,11 @@ def botones_formulario(texto_aceptar="Aceptar", url_cancelar="") -> str:
     return campo(cadena, "G")
 
 
-def combo(listado, variable: str, defecto) -> str:
+def combo(listado, variable, defecto=''):
     """Combo box con listado como opciones y texto x defecto."""
-    cadena = "<div class ='select'><select name='" + variable + "' id='" + variable + "' >\n"
+    cadena = "<div class ='select'><select name='" + variable + "' id='" + variable + "'>\n"
+    if defecto == '':
+        cadena += "<option value='' selected='selected'>Sin datos</option>\n"
     for item in listado:
         if item == defecto:
             cadena += "<option selected='selected' value='" + item + "'>" + item + "</option>\n"
@@ -90,6 +93,13 @@ def combo(listado, variable: str, defecto) -> str:
             cadena += "<option value='" + item + "'>" + item + "</option>\n"
     cadena += "</select></div>"
     return cadena
+
+
+def campo_combo(texto, listado, variable, defecto=""):
+    """Combo box con opciones en un campo"""
+    cadena = etiqueta_campo(texto)
+    cadena += cuerpo_campo(control(combo(listado, variable, defecto)))
+    return campo(cadena, "H")
 
 
 def fin_pagina() -> str:
@@ -219,12 +229,12 @@ def input_combo_2(texto: str, campo_bdd: str, resultado, campos, valor) -> str:
 def input_fecha(texto: str, campo_bdd: str, valor) -> str:
     """Crea celdas contiguas con texto y campo de texto."""
     cadena = etiqueta_campo(texto)
-    entrada = "<input class='input' type='date' placeholder='dd/mm/aaaa' "
-    entrada += "min='1920-01-01' max='2120-12-31' "
+    entra = "<input class='input' type='date' placeholder='dd/mm/aaaa' "
+    entra += "min='1920-01-01' max='2120-12-31' "
     # pattern = "(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d"
     # entrada += "name='%s' value='%s' id='%s' pattern='%s'>" % (campo_bdd, valor, campo_bdd, pattern)
-    entrada += "name='%s' value='%s' id='%s'>\n" % (campo_bdd, valor, campo_bdd)
-    cadena += cuerpo_campo(campo(control(entrada)))
+    entra += "name='%s' value='%s' id='%s'>\n" % (campo_bdd, valor, campo_bdd)
+    cadena += cuerpo_campo(campo(control(entra)))
 
     return campo(cadena, "H")
 
@@ -277,10 +287,10 @@ def input_entero(texto, campo_bdd, valor, minimo=None, maximo=None):
     return campo(cdn_3, "H")
 
 
-def input_check(texto: str, variable: str, valor) -> str:
+def input_check(texto, variable, valor):
     """Imprime 2 celdas, una con texto y otra con un checkbox"""
     adicional = ""
-    if valor is None or valor == "":
+    if (valor is None) or (valor == "") or (valor == "None"):
         val = 0
     elif isinstance(valor, int):
         val = valor
@@ -331,14 +341,31 @@ def input_check_2(texto: str, variable: str, valor) -> str:
     return cadena
 
 
+def input_radio(texto, variable, arreglo, valor):
+    # arreglo es un DICCIONARIO con texto y valor del item
+    radio = ""
+    for llave in arreglo:
+        radio += "<label class='radio'>"
+        chkd = ""
+        if arreglo[llave] == valor:
+            chkd = "checked"
+        radio += "<input type='radio' name='%s' value='%s' %s> " % (variable, arreglo[llave], chkd)
+
+        radio += llave
+        radio += " </label>   "
+    cadena = etiqueta_campo(texto)
+    cadena += cuerpo_campo(campo(control(radio)))
+    return campo(cadena, "H")
+
+
 def linea_dato(texto: str, dato) -> str:
     """Imprime una linea con 2 celdas: una con un texto y otra con un dato"""
     return "<tr><td>%s</td><td>%s</td></tr>" % (texto, str(dato))
 
 
-def linea_numero(texto, decimales=2):
+def linea_numero(texto, dato, decimales=2):
     """Imprime una celda con un número formateado con 2 decimales"""
-    print(celda(funciones.numero(texto, decimales), "right"))
+    return "<tr><td>%s</td><td align='right'>%s</td></tr>" % (texto, funciones.numero(dato, decimales))
 
 
 def script_noenter():
@@ -472,7 +499,18 @@ def boton_grafica(accion):
     return enlace(accion, img('/img/chart.png', 24, 24, 0), 'Gráfica')
 
 
+def boton_play(accion: str) -> str:
+    return enlace(accion, img("/img/play.png", 24, 24, 0), "No visto")
+
+
+def boton_stop(accion: str) -> str:
+    return enlace(accion, img("/img/stop.png", 24, 24, 0), "No visto")
+
+
+def boton_texto(texto: str,  accion: str, detalle='') -> str:
+    return enlace(accion, texto, detalle)
 # ========================================================
+
 
 def celda_menu(texto, enl, icono, ayuda=""):
     """Pone una celda del menu"""
@@ -580,7 +618,7 @@ def boton_editar(accion):
 
 def celda_moneda(texto):
     """Imprime una celda con un valor monetario adentro"""
-    print(celda(funciones.moneda(texto), "right"))
+    return celda(funciones.moneda(texto), "right")
 
 
 def nota(texto):
@@ -730,11 +768,3 @@ def limpiar_html(texto: str) -> str:
     mensaje = mensaje.replace("&aacute;", "ú")
     mensaje = mensaje.replace("&ntilde;", "ñ")
     return mensaje
-
-
-def boton_play(accion: str) -> str:
-    return enlace(accion, img("/img/play.png", 24, 24, 0), "No visto")
-
-
-def boton_stop(accion: str) -> str:
-    return enlace(accion, img("/img/stop.png", 24, 24, 0), "No visto")

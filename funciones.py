@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-"""Funciones generales version 0.6.27 """
+"""Funciones generales version 0.10.28."""
 import sys
-import cgitb
 import datetime
 import decimal
 
-cgitb.enable()
 
+# T I E M P O
 MESES = [[1, "enero"], [2, "febrero"], [3, "marzo"], [4, "abril"], [5, "mayo"], [6, "junio"],
          [7, "julio"], [8, "agosto"], [9, "setiembre"], [10, "octubre"], [11, "noviembre"],
          [12, "diciembre"]]
@@ -27,12 +25,56 @@ def meses_ejercicio():
 
 
 def meses():
-    return ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", 
+    return ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
             "Setiembre", "Octubre", "Noviembre", "Diciembre"]
 
 
 def meses_abrev():
     return ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"]
+
+
+def inicio_de_mes(fecha_ver):
+    """ Devuelve primer dia del mes """
+    if type(fecha_ver) is datetime.datetime:
+        return fecha_ver.replace(day=1)
+    elif fecha_ver is str:
+        fec = str_to_fecha(fecha_ver)
+        return fec.replace(day=1)
+
+
+def fin_de_mes(fecha_ver):
+    """Devuelve ultimo dia del mes"""
+    fecha = str_to_fecha(fecha_ver)
+    # Arrimarse a fin de mes y agregar 4 días
+    proximo = fecha.replace(day=28) + datetime.timedelta(days=4)
+    # restar el numero de dias en exceso al ultimo dia del mes
+    return proximo - datetime.timedelta(days=proximo.day)
+
+
+def str_to_fecha(fecha_ver: str):
+    """Devuelve anu fecha a partir de una cadena"""
+    if type(fecha_ver) is datetime.datetime:
+        return fecha_ver
+    elif type(fecha_ver) is str:
+        # Ver separador y separar matriz
+        if "/" in fecha_ver:
+            fec = fecha_ver.split("/")
+            if len(fec[2]) == 2:
+                return datetime.datetime.strptime(fecha_ver, "%d/%m/%y")
+            elif len(fec[2]) == 4:
+                return datetime.datetime.strptime(fecha_ver, "%d/%m/%Y")
+            else:
+                return None
+        elif "-" in fecha_ver:
+            fec = fecha_ver.split("-")
+            if len(fec[0]) == 2:
+                return datetime.datetime.strptime(fecha_ver, "%y-%m-%d")
+            elif len(fec[0]) == 4:
+                return datetime.datetime.strptime(fecha_ver, "%Y-%m-%d")
+            else:
+                return None
+    else:
+        return None
 
 
 def a_palabras(number):
@@ -195,6 +237,10 @@ def iso_a_fecha(fecha):
         return ""
 
 
+def fecha_a_sql(fecha):
+    return fecha_a_iso(fecha)
+
+
 def iso_a_datetime(fecha):
     """convierte fecha ISO a datetime de python"""
     if isinstance(fecha, str):
@@ -206,7 +252,29 @@ def iso_a_datetime(fecha):
         return ""
 
 
-def fecha_a_sql(fecha):
+def str_to_date(strfecha):
+    if isinstance(strfecha, datetime.date) or isinstance(strfecha, datetime.datetime):
+        return strfecha
+    if not isinstance(strfecha, str):
+        return None
+    if "/" in strfecha:
+        fec = strfecha.split('/')
+        if len(fec[2]) == 2:
+            fecha_retorno = datetime.datetime.strptime(strfecha, "%d/%m/%y")
+        elif len(fec[2]) == 4:
+            fecha_retorno = datetime.datetime.strptime(strfecha, "%d/%m/%Y")
+        else:
+            fecha_retorno = None
+    if "-" in strfecha:
+        fec = strfecha.split('-')
+        if len(fec[0]) == 4:
+            fecha_retorno = datetime.datetime.strptime(strfecha, "%Y-%m-%d")
+        else:
+            fecha_retorno = None
+    return fecha_retorno
+
+
+def fecha_a_iso(fecha):
     """Convierte fecha legible a fecha aceptable por mysql"""
     if isinstance(fecha, datetime.date) or (isinstance(fecha, datetime.datetime)):
         ano = str(fecha.year)
@@ -246,7 +314,7 @@ def hoy_iso():
 def ahora():
     """Devuelve la hora de hoy en formato HH:MM"""
     return datetime.datetime.now().strftime("%H:%M")
-    
+
 
 def timestamp():
     """Devuelve el TS actual en formato ISO"""
