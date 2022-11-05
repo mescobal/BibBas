@@ -1,13 +1,23 @@
 """Librería para conectar con base de datos magik
 version 0.11.22
+Ver 1.12: ver_nombre: arreglado para lidiar con None y cadenas vacías
 """
+import typing
 from lib import datos
+
+
+class Actividad(datos.Tabla):
+    """Actividad = suactivi"""
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "pg", "suactivi", "lifunid", "magik")
+        if ident is not None:
+            self.ir_a(ident)
 
 
 class AgrFuncionarios(datos.Tabla):
     """Agrupacion de funcionarios"""
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "licfunc1", "lifunid", "magik")
+        datos.Tabla.__init__(self, "pg", "licfunc1", "lifunid", "magik")
         if ident is not None:
             self.ir_a(ident)
 
@@ -15,42 +25,35 @@ class AgrFuncionarios(datos.Tabla):
 class Agrupamiento(datos.Tabla):
     """Categorías de agrupamiento de funcionarios"""
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "suagrfu1", "suagrfunco", "magik")
+        datos.Tabla.__init__(self, "pg", "suagrfu1", "suagrfunco", "magik")
         if ident is not None:
             self.ir_a(ident)
 
 
 class Cargos(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "sucargo", "sucarcod", "magik")
+        datos.Tabla.__init__(self, "pg", "sucargo", "sucarcod", "magik")
         if ident is not None:
             self.ir_a(ident)
 
 
 class CatClientes(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "categori", "percatid", "magik")
+        datos.Tabla.__init__(self, "pg", "categori", "percatid", "magik")
         if ident is not None:
             self.ir_a(ident)
 
 
 class Contratos(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "contrato", "percontid", "magik")
+        datos.Tabla.__init__(self, "pg", "contrato", "percontid", "magik")
         if ident is not None:
             self.ir_a(ident)
 
 
 class CtaCteMovimientos(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "ccctact2", "ctctacod", "magik")
-        if ident is not None:
-            self.ir_a(ident)
-
-
-class CuentaCorriente(datos.Tabla):
-    def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "ccctacte", "ccctacod", "magik")
+        datos.Tabla.__init__(self, "pg", "ccctact2", "ctctacod", "magik")
         if ident is not None:
             self.ir_a(ident)
 
@@ -76,7 +79,7 @@ class Empresas(datos.Tabla):
 class Funcionarios(datos.Tabla):
     """Funcionarios de la empresa"""
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "licfunci", "lifunid", "magik")
+        datos.Tabla.__init__(self, "pg", "licfunci", "lifunid", "magik")
         if ident is not None:
             self.ir_a(ident)
 
@@ -90,15 +93,26 @@ class Funcionarios(datos.Tabla):
 
 class Personas(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "persona", "perid", "magik")
+        datos.Tabla.__init__(self, "pg", "persona", "perid", "magik")
         if ident is not None:
             self.ir_a(ident)
 
-    def ver_nombre(self, ident):
+    def ver_nombre(self, ident: typing.Optional[int]) -> str:
         """#{fila['perape1']} #{fila['perape2']}, #{fila['pernom1']} #{fila ['pernom2']}"""
-        self.ir_a(ident)
+        if ident is None:
+            nombre = "Sin datos"
+        else:
+            try:
+                numero = int(ident)
+                self.ir_a(numero)
+                nombre = self.registro["perape1"] + "," + self.registro["pernom1"]
+            except ValueError:
+                nombre = "Sin datos"
+        return nombre
+
+    def nombre_completo(self):
         nombre = self.registro["perape1"] + " " + self.registro["perape2"] + "," + \
-            self.registro["pernom1"] + " " + self.registro["pernom2"]
+                 self.registro["pernom1"] + " " + self.registro["pernom2"]
         return nombre
 
     def ver_telefono(self, ident):
@@ -136,7 +150,7 @@ class Moviles(datos.Tabla):
 
 class Secciones(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "suseccio", "suseccod", "magik")
+        datos.Tabla.__init__(self, "pg", "suseccio", "suseccod", "magik")
         if ident is not None:
             self.ir_a(ident)
 
@@ -148,26 +162,27 @@ class Telefonos(datos.Tabla):
             self.ir_a(ident)
 
 
-class VinculoFuncional(datos.Tabla):
+class Valores(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "suvinfun", "suvfuncod", "magik")
+        datos.Tabla.__init__(self, "pg", "valores", "perserid", "magik")
         if ident is not None:
             self.ir_a(ident)
 
 
-def ver_nombre(perid):
-    pers = Personas(perid)
-    if pers.encontrado:
-        nombre = "%s, %s" % (pers.registro["perape1"], pers.registro["pernom1"])
-    else:
-        nombre = 'Sin datos'
-    return nombre
+class VinculoFuncional(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "pg", "suvinfun", "suvfuncod", "magik")
+        if ident is not None:
+            self.ir_a(ident)
 
 
 def ver_nombre_completo(perid):
     pers = Personas(perid)
-    nombre = 'Sin datos' if pers.registro is None else "%s %s, %s %s" % (pers.registro["perape1"], pers.registro["perape2"],
-                                                                         pers.registro["pernom1"], pers.registro["pernom2"])
+    if pers.registro is None:
+        nombre = "Sin datos"
+    else:
+        nombre = "%s %s, %s %s" % (pers.registro["perape1"], pers.registro["perape2"],
+                                   pers.registro["pernom1"], pers.registro["pernom2"])
     return nombre
 
 

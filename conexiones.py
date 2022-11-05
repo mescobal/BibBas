@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env ruby
 """
 Conexiones: librería con conexiones a sqlite e informix
 clases con cursoresy operaciones básicas sobre tablas
 @author: mescobal
-version 7.00
 """
 import logging
 import datetime
@@ -11,8 +10,7 @@ import decimal
 import sqlite3
 import os.path
 import pyodbc
-
-from lib import htm
+import htm
 
 logging.basicConfig(filename="general.log", level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')

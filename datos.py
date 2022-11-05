@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Modulo para interactuar con base de datos. Puede definirse un motor
-Version 0.7: arreglo cargar_datos para evitar sobreescribir valores nulos
-Version 0.11: abre y cierra las conexiones para evitar el max_conn de algunas db
-Version 0.12: usar archivo INI para configurar BDD
+Version 1.02: agrego lectura de configuración para Postgres
+Version 1.3: agrego cierre de archivo yaml abierto
+Version 1.6: cambio yaml x json
 """
-import configparser
 import sqlite3
 import psycopg2
 import psycopg2.extras
-from lib import ifmxdb
+import json
+# from lib import ifmxdb
 
 
 class Datos(object):
@@ -17,49 +17,39 @@ class Datos(object):
         # Asigna valores a atributos del objeto Datos
         self.motor = motor
         self.num_filas = 0
-        self.data = data
-        self.conectado = False
-        self.config = configparser.ConfigParser()
-        self.config.read('./conf/emovil.conf')
-        self.conectar()
-
-    def conectar(self):
+        arch = open('conf/emovil.json')
+        conf = json.load(arch)
+        arch.close()
         if self.motor == "ifmx":
             # Falta adecuar la configuracion de informix
-            self.ifmx = ifmxdb.Ifmx()
-            self.conectado = True
+            # self.ifmx = ifmxdb.Ifmx()
+            print("error al seleccionar motor")
         elif self.motor == "pg":
-            host = self.config["pg"]["host"]
-            data = self.config["pg"]["database"]
-            user = self.config["pg"]["user"]
-            pasw = self.config["pg"]["password"]
-            self.datab = psycopg2.connect(host="109.0.0.100", database="magik", user="postgres", password="postgres")
+            host = conf['postgres']['host']
+            data = conf['postgres']['database']
+            self.datab = psycopg2.connect(host=host, database=data, user="postgres", password="postgres")
+            # noinspection PyArgumentList
             self.cursor = self.datab.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            self.conectado = True
         else:
             # la opcion por defecto es sqlite
             # la extensión es "db"
+            self.motor = "sq3"
+            self.data = data
             try:
                 # Directorio por defecto "./datos"
                 self.datab = sqlite3.connect("./datos/" + self.data + ".db",  detect_types=sqlite3.PARSE_DECLTYPES)
                 self.datab.row_factory = sqlite3.Row
                 self.cursor = self.datab.cursor()
-                self.conectado = True
             except sqlite3.Error as error:
                 print(error)
 
     def ejecutar(self, sql):
         """Rutina genérica de ejecución de SQL levanta error si corresponde"""
-        if self.conectado is False:
-            self.conectar()
         try:
             self.cursor.execute(sql)
             self.datab.commit()
         except RuntimeError as error:
             print(error)
-
-    def cerrar(self):
-        self.datab.close()
 
 
 class Tabla(Datos):
@@ -248,8 +238,14 @@ class Tabla(Datos):
 
     def borrar_tabla(self):
         """OJO rutina que vacía la tabla"""
-        sql = "TRUNCATE TABLE " + self.tabla
-        self.ejecutar(sql)
+        if self.motor == "sq3":
+            sql = "DELETE FROM " + self.tabla
+            self.ejecutar(sql)
+            sql = "VACUUM"
+            self.ejecutar(sql)
+        else:
+            sql = "TRUNCATE TABLE " + self.tabla
+            self.ejecutar(sql)
 
     def obtener(self, campo, numeroid):
         """A partir de una ID devuelve el valor del campo encontrado"""
@@ -260,17 +256,11 @@ class Tabla(Datos):
 
     def cargar_datos(self, formulario):
         """carga datos a la tabla a partir de un formulario web (bottle)"""
-        # Ojo los registros nulos!!!!! Hacerlo por formulario porque de lo
-        # contrario los valores nulos del form anulan los registros con valores válidos
-        # for item in self.registro:
-        #    if item == self.clave:
-        #        continue
-        #    # Si no lo hago así, no registra UNICODE
-        #    self.registro[item] = getattr(formulario, item)
-        for llave in formulario:
-            if llave == self.clave:
+        for item in self.registro:
+            if item == self.clave:
                 continue
-            self.registro[llave] = getattr(formulario, llave)
+            # Si no lo hago así, no registra UNICODE
+            self.registro[item] = getattr(formulario, item)
 
 
 if __name__ == "__main__":

@@ -1,25 +1,11 @@
 #!/usr/bin env python3
 """Librería para manejo de tablas
 Ver: 0.6.27 : elimino magik y lo saco aparte
+Ver: 1.12: agrego tablas. Urbanos
 """
 
 import datetime
 from lib import datos
-
-
-class Actividades(datos.Tabla):
-    """Actividad del empleado"""
-    def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "suactivi", "lifunid", "indicadores")
-        if ident is not None:
-            self.ir_a(ident)
-
-
-class Balancetes(datos.Tabla):
-    def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "balancetes", "id", "contabilidad")
-        if ident is not None:
-            self.ir_a(ident)
 
 
 class CatEmpleados(datos.Tabla):
@@ -39,7 +25,14 @@ class Claves(datos.Tabla):
 
 class Clientes(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "clientes", "id", "clientes")
+        datos.Tabla.__init__(self, "sq3", "clientes", "id", "recepcion")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class Convocatorias(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "convocatorias", "id", "dt")
         if ident is not None:
             self.ir_a(ident)
 
@@ -51,13 +44,6 @@ class CV(datos.Tabla):
             self.ir_a(ident)
 
 
-class Ejercicios(datos.Tabla):
-    def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "ejercicios", "id", "contabilidad")
-        if ident is None:
-            self.ir_a(ident)
-
-
 class Empleados(datos.Tabla):
     def __init__(self, ident=None):
         datos.Tabla.__init__(self, "sq3", "empleados", "id", "empleados")
@@ -65,9 +51,37 @@ class Empleados(datos.Tabla):
             self.ir_a(ident)
 
 
+class Empresas(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "pg", "empresas", "id", "empresas")
+        if ident is not None:
+            self.ir_a(ident)
+
+
 class Encuesta(datos.Tabla):
     def __init__(self, ident=None):
         datos.Tabla.__init__(self, "sq3", "encuesta", "id", "recepcion")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class EstadoLicencia(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "estado_licencia", "id", "empleados")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class EstadosConvocatorias(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "estados_convocatorias", "id", "dt")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class EstadosTraslados(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "estados_traslados", "id", "recepcion")
         if ident is not None:
             self.ir_a(ident)
 
@@ -103,6 +117,13 @@ class Guardias(datos.Tabla):
 class Indicadores(datos.Tabla):
     def __init__(self, ident=None):
         datos.Tabla.__init__(self, "sq3", "indicadores", "id", "indicadores")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class Licencias(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "licencias", "id", "empleados")
         if ident is not None:
             self.ir_a(ident)
 
@@ -143,16 +164,16 @@ class Mantenimiento(datos.Tabla):
             self.ir_a(ident)
 
 
-class PersonalTurno(datos.Tabla):
-    def __init__(self,  ident=None):
-        datos.Tabla.__init__(self,  "sq3", "personal_turno",  "id",  "recepcion")
+class Medios(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "medios", "id", "recepcion")
         if ident is not None:
             self.ir_a(ident)
 
 
-class PlanCuentas(datos.Tabla):
-    def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "plancta", "id", "contabilidad")
+class PersonalTurno(datos.Tabla):
+    def __init__(self,  ident=None):
+        datos.Tabla.__init__(self,  "sq3", "personal_turno",  "id",  "recepcion")
         if ident is not None:
             self.ir_a(ident)
 
@@ -192,9 +213,16 @@ class Registro(datos.Tabla):
             self.ir_a(ident)
 
 
+class Suplencias(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "suplencias", "id", "dt")
+        if ident is not None:
+            self.ir_a(ident)
+
+
 class Suplentes(datos.Tabla):
     def __init__(self, ident=None):
-        datos.Tabla.__init__(self, "sq3", "suplentes", "id", "empleados")
+        datos.Tabla.__init__(self, "sq3", "suplentes", "id", "dt")
         if ident is not None:
             self.ir_a(ident)
 
@@ -202,6 +230,22 @@ class Suplentes(datos.Tabla):
 class Tareas(datos.Tabla):
     def __init__(self, ident=None):
         datos.Tabla.__init__(self, "sq3", "tareas", "id", "tareas")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class TipoCliente(datos.Tabla):
+    """Tipo de cliente para traslados locales"""
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "tipo_cliente", "id", "recepcion")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class TipoLicencia(datos.Tabla):
+    """Tipo de licencia"""
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "tipo_licencia", "id", "empleados")
         if ident is not None:
             self.ir_a(ident)
 
@@ -272,9 +316,23 @@ class Turnos(datos.Tabla):
         return valor
 
 
+class Urbanos(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "urbanos", "id", "recepcion")
+        if ident is not None:
+            self.ir_a(ident)
+
+
 class Usuarios(datos.Tabla):
     def __init__(self, ident=None):
         datos.Tabla.__init__(self, "sq3", "usuarios", "id", "usuarios")
+        if ident is not None:
+            self.ir_a(ident)
+
+
+class VariablesCostos(datos.Tabla):
+    def __init__(self, ident=None):
+        datos.Tabla.__init__(self, "sq3", "variables_costos", "id", "vehiculos")
         if ident is not None:
             self.ir_a(ident)
 
@@ -299,3 +357,9 @@ class Viajes(datos.Tabla):
         if ident is not None:
             self.ir_a(ident)
 
+    def ver_unidad(self, ident: int) -> str:
+        self.ir_a(ident)
+        if self.encontrado:
+            return self.registro["unidad"]
+        else:
+            return "Sin datos"
