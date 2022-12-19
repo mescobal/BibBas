@@ -1,19 +1,19 @@
 """Rutinas que dependen den BULMA CSS
 Ver 1.12 modifico input_check para manejar valores imprevistos
 Ver 2.01 comienzo modificaciones para peewee: combobox
+Ver 2.03 agrego typing Optional a generar_menu
 """
 
 import typing
-from lib import dinero
+from lib import dinero, tiempo
 from lib import htm
 
 # Primer orden
-from lib.htm import celda_encabezado
 
 
 def boton(texto, accion, estilo='link'):
     """Boton con acción"""
-    return "<a class='button is-%s' href='%s'>%s</a>" % (estilo, accion, texto)
+    return f"<a class='button is-{estilo}' href='{accion}'>{texto}</a>"
 
 
 # Pone un boton titulado TITULO con ICONO y ACCION
@@ -39,7 +39,7 @@ def campo(texto, tipo=''):
 def boton_cancelar(accion):
     cad = "<a href='#' title='Cancelar'><span class='icon'><i class='fas fa-window-close'"
     cad += " onClick=\"if(confirm('¿Desea cancelar?')) "
-    cad += "window.location='%s" % accion
+    cad += f"window.location='{accion}"
     cad += "';\"></i></span></a>"
     return cad
 
@@ -53,12 +53,12 @@ def cuerpo_campo(texto):
 
 
 def faicon(icono, color='grey'):
-    return htm.span("<i class='%s'></i>" % icono, "icon has-text-%s" % color)
+    return htm.span(f"<i class='{icono}'></i>", f"icon has-text-{color}")
 
 
 # Imprime un boton de volver
 def boton_cerrar(retorno):
-    cad = "<a class='button is-light is-small' href='%s'>" % retorno
+    cad = f"<a class='button is-light is-small' href='{retorno}'>"
     cad2 = "<i class='fas fa-window-close'></i>"
     cad += htm.span(cad2, 'icon is-small')
     cad += htm.span('Cerrar') + '</a>'
@@ -81,7 +81,7 @@ def boton_eliminar(accion):
     cad = "<a href='#' title='Eliminar'>"
     cad2 = "<i class='fas fa-trash-alt'"
     cad2 += " onClick=\"if(confirm('¿Desea eliminar este dato?')) "
-    cad2 += "window.location='%s';\"></i>" % accion
+    cad2 += f"window.location='{accion}';\"></i>"
     cad += htm.span(cad2, 'icon') + '</a>'
     return cad
 
@@ -105,7 +105,7 @@ def botones(url):
     cad = etiqueta_campo('')
     cad += control("<button type='submit' class='button is-link'>Aceptar</button>")
     cad2 = "<button type='reset' class='button is-light'"
-    cad2 += " onClick=\"window.location.href='%s'\">Cancelar</button>\n" % url
+    cad2 += f" onClick=\"window.location.href='{url}'\">Cancelar</button>\n"
     cad += htm.div(cad2, 'control')
     return campo(cad, 'G')
 
@@ -115,7 +115,7 @@ def botones_formulario(texto_aceptar='Aceptar', url_cancelar=''):
     cad = etiqueta_campo('')
     cad += htm.div("<button type='submit' class='button is-link'>%s</button>\n" % texto_aceptar, 'control')
     cad2 = "<button type='reset' class='button is-light'"
-    cad2 += " onClick=\"window.location.href='%s'\">Cancelar</button>\n" % url_cancelar
+    cad2 += f" onClick=\"window.location.href='{url_cancelar}'\">Cancelar</button>\n"
     cad += htm.div(cad2, 'control')
     return campo(cad, 'G')
 
@@ -144,28 +144,28 @@ def input_check(texto: str, variable: str, val: str) -> str:
         adicional = 'checked'
     else:
         adicional = ''
-    chk = "<INPUT TYPE='checkbox' NAME='%s' VALUE='1' %s>" % (variable, adicional)
+    chk = f"<INPUT TYPE='checkbox' NAME='{variable}' VALUE='1' {adicional}>"
     cad += cuerpo_campo(campo(control(chk)))
     return campo(cad, 'H')
 
 
 # Checkbox en 2 columnas
 def input_check1(texto: str, variable: str, val: str) -> str:
-    cad = "<div class='field is-horizontal is-grouped'>"
-    cad += cuerpo_campo(input_check(texto, variable, val))
+    cad = "<div class='columns'>"
+    cad += htm.div(cuerpo_campo(input_check(texto, variable, val)), "column")
     return cad
 
 
 # Checkbox en 2 columnas 2
 def input_check2(texto: str, variable: str, val: str) -> str:
-    cad = cuerpo_campo(input_check(texto, variable, val))
+    cad = htm.div(cuerpo_campo(input_check(texto, variable, val)), "column")
     cad += '</div>'
     return cad
 
 
 def combo(campo_bdd: str, resultado, campos: typing.List[str], val) -> str:
     cad = "<select name='%s' id='%s'>\n" % (campo_bdd, campo_bdd)
-    if val == '':
+    if val == '' or val is None:
         cad += "<option value='' selected='selected'>Sin datos</option>\n"
     for fil in resultado:
         # cad += "<option value='%s' " % fil[campos[0]]
@@ -176,6 +176,11 @@ def combo(campo_bdd: str, resultado, campos: typing.List[str], val) -> str:
         cad += ">%s</option>\n" % getattr(fil, campos[1])
     cad += "</select>\n"
     return cad
+
+
+def entrada(valor: str, tipo: str, clase: str = 'button is-link') -> str:
+    """Devuelve HTML input"""
+    return f"<input class='{clase}' type='{tipo}' value='{valor}'>"
 
 
 # Linea con celda con texto y otra con combobox
@@ -226,7 +231,7 @@ def input_entero(texto: str, campo_bdd: str, val, minimo=None) -> str:
     cad += "<input class='input' type='number' "
     if minimo is not None:
         minimo = str(int(minimo))
-        cad += "min=%s " % minimo
+        cad += f"min={minimo} "
     cad += "name='%s' value='%s' id='%s' step='1'>" % (campo_bdd, numero, campo_bdd)
     cad += '</div>'
     cdn3 = cdn2 + cuerpo_campo(cad)
@@ -236,10 +241,10 @@ def input_entero(texto: str, campo_bdd: str, val, minimo=None) -> str:
 # Crea celdas contiguas con texto y campo de texto
 def input_fecha(texto: str, campo_bdd: str, val):
     cad = etiqueta_campo(texto)
-    entrada = "<input class='input' type='date' placeholder='dd/mm/aaaa' "
-    entrada += "min='1920-01-01' max='2120-12-31' "
-    entrada += "name='%s' value='%s' id='%s'>\n" % (campo_bdd, val, campo_bdd)
-    cad += cuerpo_campo(campo(control(entrada)))
+    cad2 = "<input class='input' type='date' placeholder='dd/mm/aaaa' "
+    cad2 += "min='1920-01-01' max='2120-12-31' "
+    cad2 += f"name='{campo_bdd}' value='{val}' id='{campo_bdd}'>\n"
+    cad += cuerpo_campo(campo(control(cad2)))
     return campo(cad, 'H')
 
 
@@ -276,12 +281,21 @@ def input_hora(texto, campo_bdd, val):
     return campo(cad, 'H')
 
 
+def input_fecha_hora(texto, campo_bdd, val):
+    """Implementación del control HTML5 datetime"""
+    cad = etiqueta_campo(texto)
+    if val == "":
+        val = tiempo.hoy_iso() + " " + tiempo.ahora()
+    cad += cuerpo_campo(campo(control(htm.entrada('datetime-local', texto, campo_bdd, val))))
+    return campo(cad, 'H')
+
+
 # Imprime una linea con una celda con texto y otra con un campo memo
 def input_memo(texto, campo_bdd, val):
     if val is None:
         val = ''
     cad = etiqueta_campo(texto)
-    ctrl = "<textarea class='textarea' name='%s' placeholder='%s'>%s</textarea>" % (campo_bdd, texto, val)
+    ctrl = f"<textarea class='textarea' name='{campo_bdd}' placeholder='{texto}'>{val}</textarea>"
     cad += cuerpo_campo(campo(control(ctrl)))
     return campo(cad, 'H')
 
@@ -292,7 +306,16 @@ def input_numero(texto, campo_bdd, val, decimales=2):
         val = '0'
     num = dinero.numero(val, decimales)
     cad = etiqueta_campo(texto)
-    cad += cuerpo_campo(campo(control(htm.entrada('number', texto, campo_bdd, num))))
+    paso = 0
+    if decimales == 2:
+        paso = "0.01"
+    elif decimales == 1:
+        paso = "0.1"
+    else:
+        paso = "1"
+    cad2 = f"<input class='input' type='number' step='{paso}' placeholder='{texto}'"
+    cad2 += f"name='{campo_bdd}' value='{num}' id='{campo_bdd}'>"
+    cad += cuerpo_campo(campo(control(cad2)))
     return campo(cad, 'H')
 
 
@@ -328,16 +351,25 @@ def input_texto(texto: str, campo_bdd: str, val: str) -> str:
 
 # Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar
 def input_texto1(texto, campo_bdd, val):
-    cad = "<div class='field is-horizontal is-grouped'>"
-    cad += input_texto(texto, campo_bdd, val)
+    # cad = "<div class='field is-horizontal is-grouped'>"
+    cad = "<div class='columns'>"
+    cad += htm.div(input_texto(texto, campo_bdd, val), "column")
     return cad
 
 
 # Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar
 def input_texto2(texto: str, campo_bdd: str, val: str) -> str:
-    cad = input_texto(texto, campo_bdd, val)
+    cad = htm.div(input_texto(texto, campo_bdd, val), "column")
     cad += '</div>'
     return cad
+
+
+def mensaje(texto: str) -> str:
+    """Imprime un mensaje - bulma"""
+    cadena = "<article class='message'>"
+    cadena += htm.div(texto, "message-body")
+    cadena += "</article>"
+    return cadena
 
 
 def nav_bar(enlace, icono, texto):
@@ -357,21 +389,11 @@ def rango_fechas(fini=None, ffin=None, accion=''):
     return cad
 
 
-def script_file():
-    cad = "const fileInput = document.querySelector('#fileupld input[type=file]');"
-    cad += 'fileInput.onchange = () => {'
-    cad += 'if (fileInput.files.length > 0) {'
-    cad += "const fileName = document.querySelector('#fileupld .file-name');"
-    cad += 'fileName.textContent = fileInput.files[0].name;'
-    cad += "}\n}\n"
-    return htm.script(cad)
-
-
 # Nivel terciario
 def barra_navegacion():
     cad = "<nav class='navbar' role='navigation' aria-label='main navigation'>"
     cad += "<div class='navbar-brand'><a class='navbar-item' href='/'>"
-    cad += "<img src='/img/logo.png'></a>"
+    cad += "<img src='/img/logo_mini.png'></a>"
     cad += "<a role='button' class='navbar-burger' aria-label='menu' aria-expanded='false' "
     cad += "data-target='navbarBasicExample'>"
     cad += "<span aria-hidden='true'></span><span aria-hidden='true'></span><span aria-hidden='true'></span>"
@@ -392,20 +414,7 @@ def barra_navegacion():
 
 
 def file_upload(destino, retorno):
-    cad = "<form action='%s' method='post' enctype='multipart/form-data'>" % destino
-    # cad += "<div id='fileupld' class='file has-name'>"
-    # cad += "<label class='file-label'>"
-    # cad += "<input class='file-input' type='file' name='file'>"
-    # cad += "<span class='file-cta'>"
-    # cad += htm.span("<i class='fas fa-upload'></i>", 'file-icon')
-    # cad += '</span>'
-    # cad += htm.span('Seleccione un archivo...', 'file-label')
-    # cad += '</span>'
-    # cad += htm.span('...', 'file-name')
-    # cad += '</label>'
-    # cad += botones(retorno)
-    # cad += '</div></form>'
-    # cad += script_file()
+    cad = f"<form action='{destino}' method='post' enctype='multipart/form-data'>"
     cad += "<div id = 'file-js-example' class ='file has-name'>"
     cad += "<label class ='file-label'>"
     cad += "<input class ='file-input' type='file' name='archivo'>"
@@ -431,7 +440,7 @@ def file_upload(destino, retorno):
     return cad
 
 
-def generar_menu(eti: str, items: dict, activo=None) -> str:
+def generar_menu(eti: str, items: dict, activo: typing.Optional[str] = None) -> str:
     if isinstance(activo, str):
         num_activo = None
         for llave in items.keys():
@@ -463,12 +472,12 @@ def celda_menu(texto, enl, icono, ayuda="") -> str:
     """Pone una celda del menu"""
     # 1
     cadena = "<div class='tile is-child is-info box'>\n"
-    cadena += "<a href='%s'>" % enl
-    cadena += "<p class='title' align='center'>%s</p></a>\n" % texto
-    cadena += "<a href='%s'>" % enl
+    cadena += f"<a href='{enl}'>"
+    cadena += f"<p class='title' align='center'>{texto}</p></a>\n"
+    cadena += f"<a href='{enl}'>"
     cadena += "<div class='level'><div class='level-item has-text-centered'>\n"
     cadena += "<figure class='image is-96x96'>\n"
-    cadena += "<img src='/img/%s'>\n" % icono
+    cadena += f"<img src='/img/{icono}'>\n"
     cadena += '</figure>\n'
     cadena += '</div>\n</div>\n'
     cadena += '</a>\n'
@@ -482,11 +491,18 @@ def celda_menu(texto, enl, icono, ayuda="") -> str:
     return cadena
 
 
-def encabezado_tabla(arr):
+def encabezado_tabla(arr, fuente: int = 6) -> str:
     """A partir de un array arma el encabezado de una tabla"""
-    cad = "<div class='table-container'>"
+    # cad = "<div class='table-container is-size-%s'>" % fuente
+    cad = "<div style='display: grid'>"
+    cad += f"<div class='table-container is-size-{fuente}'>\n"
     cad += "<table class='table is-hoverable'><thead><tr>\n"
     for lin in arr:
-        cad += celda_encabezado(lin)
-    cad += '</tr>\n</thead>\n<tbody>\n'
+        cad += htm.celda_encabezado(lin)
+    cad += "</tr>\n</thead>\n<tbody>\n"
     return cad
+
+
+def fin_tabla() -> str:
+    """Imprime tags de finalizacion de una tabla. Versión Bulma"""
+    return "</tbody>\n</table>\n</div>\n</div>\n"

@@ -2,6 +2,7 @@
 version 1.02
 version 1.11: con type-hinting, fecha_a_local
 version 2.01: agrego diccionario ejercicio_meses
+Ver: 2.10 calculo de edad
 """
 
 import datetime
@@ -17,6 +18,11 @@ MESES = {1: "enero", 2: "febrero", 3: "marzo", 4: "abril", 5: "mayo", 6: "junio"
 def meses_ejercicio() -> List:
     """Devuelve lista con meses de un ejercicio económico"""
     return ["Oct", "Nov", "Dic", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set"]
+
+
+def meses_indicadores() -> List:
+    """Devuelve lista con meses m_nn correspondientes a campos de indicadores"""
+    return ["m_01", "m_02", "m_03", "m_04", "m_05", "m_06", "m_07", "m_08", "m_09", "m_10", "m_11", "m_12"]
 
 
 def ejercicio_meses() -> typing.Dict:
@@ -105,14 +111,19 @@ def sql_a_fecha_local(fecha: str) -> str:
 
 def fecha_a_local(fecha: datetime.date) -> str:
     """Convierte fecha a formato local d/m/a"""
+    if fecha is None:
+        fecha = hoy()
     intermedio = fecha_a_iso(fecha)
     return iso_a_fecha_local(intermedio)
 
 
 def iso_a_fecha_local(fecha: str) -> str:
     """Convierte fecha en formato iso a legible"""
-    fecharr = fecha.split("-")
-    return "%s/%s/%s" % (fecharr[2], fecharr[1], fecharr[0])
+    if fecha is not None:
+        fecharr = fecha.split("-")
+        return "%s/%s/%s" % (fecharr[2], fecharr[1], fecharr[0])
+    else:
+        return "01/01/01"
 
 
 def fecha_a_sql(fecha: datetime.date):
@@ -190,6 +201,15 @@ def date_a_datetime(fecha: datetime.date) -> datetime.datetime:
     return datetime.datetime(fecha.year, fecha.month, fecha.day)
 
 
+def datetime_a_html5(fecha: typing.Union[datetime.datetime, None] = None) -> str:
+    """Convierte datetime a formato compatible con datetime-local del navegador"""
+    if fecha is None:
+        fecha = datetime.datetime.now()
+    resultado = f"{fecha.year}-{str(fecha.month).zfill(2)}-{str(fecha.day).zfill(2)}"
+    resultado += f"T{str(fecha.hour).zfill(2)}:{str(fecha.minute).zfill(2)}"
+    return resultado
+
+
 def timestamp() -> str:
     """Devuelve el TS actual en formato ISO"""
     estampa = datetime.datetime.now()
@@ -225,3 +245,13 @@ def diff_years(date1, date2):
     diff = date2 - date1
     diff_y = int((diff.days + diff.seconds/86400.0)/365.2425)
     return diff_y
+
+
+def dias_antes(dias: int) -> datetime:
+    """Tantos dias antes de hoy"""
+    return hoy() - datetime.timedelta(days=dias)
+
+
+def edad(nacimiento: datetime.datetime) -> int:
+    factual = hoy()
+    return factual.year - nacimiento.year - ((factual.month, factual.day) < (nacimiento.month, nacimiento.day))

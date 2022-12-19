@@ -1,10 +1,13 @@
 """Funciones generales
  Ver 0.10.28.
  Ver 2.01: agrego cargar datos  (x peewee), valor de checkbox
+ Ver 2.10: soluciono perid "Sin datos" para nombre_cliente
+ TODO: sacar nombre_cliente para otro lado.
  """
 
 import sys
 import decimal
+from modelos import db_magik
 
 
 def entero_pelado(num):
@@ -40,6 +43,8 @@ def str_to_float(cadena: str) -> float:
 
 def decimal_pelado(num: str) -> float:
     """Devuelve decimal sin separador de miles"""
+    if num is None:
+        num = 0
     if "," in num:
         num = num.replace(",", "")
     return float(num)
@@ -94,14 +99,42 @@ def valor_checkbox(parametro):
     try:
         retorno = int(parametro)
     except ValueError:
-        retorno = None
+        retorno = 0
     return retorno
 
 
 def entero(valor: str) -> int:
     """ devuelve entero, para evitar error al convertir INT"""
+    if valor == "":
+        return 0
+    if valor is None:
+        return 0
     try:
         retorno = int(float(valor))
     except ValueError:
         retorno = 0
     return retorno
+
+
+def nombre_cliente(tipo: int, ident: int) -> str:
+    if tipo == 1:
+        if ident == 1117:
+            nombre = 'CAMCEL'
+        else:
+            empr = db_magik.Empresas.get_or_none(ident)
+            nombre = empr.emprdes if empr else "Sin datos"
+    elif tipo == 2:
+        cont = db_magik.Contratos.get_or_none(ident)
+        if cont:
+            pers = db_magik.Personas.get_or_none(cont.perid)
+            nombre = pers.nombre() if pers else "Sin datos"
+        else:
+            nombre = "Sin datos"
+    elif tipo == 3:
+        pers = db_magik.Personas.get_or_none(ident)
+        nombre = pers.nombre() if pers else "Sin datos"
+    elif tipo == 4:
+        nombre = "Solicitado por UNEM"
+    else:
+        nombre = "Sin datos"
+    return nombre

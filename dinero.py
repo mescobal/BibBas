@@ -1,14 +1,16 @@
 import decimal
+import typing
 
 UNIDADES = ('', 'UN ', 'DOS ', 'TRES ', 'CUATRO ', 'CINCO ', 'SEIS ', 'SIETE ',
             'OCHO ', 'NUEVE ', 'DIEZ ', 'ONCE ', 'DOCE ', 'TRECE ', 'CATORCE ',
-            'QUINCE ', 'DIECISEIS ', 'DIECISIETE ', 'DIECIOCHO ', 'DIECINUEVE ',
-            'VEINTE ')
-DECENAS = ('VENTI', 'TREINTA ', 'CUARENTA ', 'CINCUENTA ', 'SESENTA ', 'SETENTA ',
-           'OCHENTA ', 'NOVENTA ', 'CIEN ')
+            'QUINCE ', 'DIECISEIS ', 'DIECISIETE ', 'DIECIOCHO ',
+            'DIECINUEVE ', 'VEINTE ')
+DECENAS = ('VENTI', 'TREINTA ', 'CUARENTA ', 'CINCUENTA ', 'SESENTA ',
+           'SETENTA ', 'OCHENTA ', 'NOVENTA ', 'CIEN ')
 
-CENTENAS = ('CIENTO ', 'DOSCIENTOS ', 'TRESCIENTOS ', 'CUATROCIENTOS ', 'QUINIENTOS ',
-            'SEISCIENTOS ', 'SETECIENTOS ', 'OCHOCIENTOS ', 'NOVECIENTOS ')
+CENTENAS = ('CIENTO ', 'DOSCIENTOS ', 'TRESCIENTOS ', 'CUATROCIENTOS ',
+            'QUINIENTOS ', 'SEISCIENTOS ', 'SETECIENTOS ', 'OCHOCIENTOS ',
+            'NOVECIENTOS ')
 
 
 def a_palabras(number) -> str:
@@ -51,20 +53,18 @@ def convertir_numero(num) -> str:
         output += UNIDADES[k]
     else:
         if (k > 30) & (num[2] != '0'):
-            output += '%sY %s' % (DECENAS[int(num[1])-2], UNIDADES[int(num[2])])
+            output += '%sY %s' % (DECENAS[int(num[1])-2],
+                                  UNIDADES[int(num[2])])
         else:
             output += '%s%s' % (DECENAS[int(num[1])-2], UNIDADES[int(num[2])])
     return output
 
 
-def moneda(num):
+def moneda(num: typing.Union[float, decimal.Decimal, int]) -> str:
     """transforma un número en una cadena con formato moneda"""
-    if isinstance(num, decimal.Decimal):
-        mon = str(num)
-    else:
-        mon = numero(num, 2, th_sep=True)
-    mon = '$' + mon
-    return mon
+    if num is None:
+        num = 0
+    return "$ " + "{:,.2f}".format(num).replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def numero(num, places=2, th_sep=False):
