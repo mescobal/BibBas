@@ -1,1 +1,47 @@
-@Todo
+# BibBas
+
+Conjunto de bibliotecas varias para python y ruby
+
+## Bulma
+
+Funciones para generar páginas web usando la biblioteca Bulma.io
+
+## Conexiones
+
+## Datos
+
+## Dinero
+
+Funciones para manejo de dinero (puntos, comas, símbolo de $)
+
+## Funciones
+
+Funciones varias
+
+## Htm
+
+Genera páginas web usando HTML
+
+## Ifmxdb
+
+Funciones para conectarse a una base de datos de Informix
+
+## Magik
+
+Funciones para interacción con una base de datos específica
+
+## Paginas
+
+Clase paraa crear páginas web
+
+## Postdb
+
+Funciones para conexión a Postgresdb
+
+## Tablas
+
+Tablas de una base de datos específica
+
+## Tiempo
+
+Manejo de fechas, horas, etc.
