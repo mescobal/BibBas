@@ -1,0 +1,36 @@
+# Editores
+.vscode/
+.idea/
+.eric6project/
+.kdev4/
+emovil.code-workspace
+emovil.e4p
+emovilpy.code-workspace
+
+# Mac/OS
+.DS_Store
+
+# Python compilados
+__pycache__/
+lib/__pycache__/
+modelos/__pycache__/
+
+# Entornos
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Otros
+*.log
+log.txt
+*.db
+datos/*.db
+txt/
+conf/
+respaldo/
+public/img/rubro*
+conf/emovil.yaml
+
+
