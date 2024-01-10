@@ -31,6 +31,9 @@ module Htm
     cadena << "step='any' " if tipo == 'number'
     cadena << "name='#{campo_bdd}' value='#{valor}' id='#{campo_bdd}'>"
   end
+
+  def self.lista(texto)
+    "<li>#{texto}</li>"
   # Segundo orden
 
   # Combo box con listado como opciones y texto x defecto

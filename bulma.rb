@@ -3,16 +3,17 @@
 # Ver 1.09: inicio
 # Ver 1.10: generar menu ahora funciona con texto para poder cambiar orden
 # Ver 1.12: IMPORTANTE: arreglo combo box 1 y 2 para valores nulos
+# Ver 3.08: Lo emparejo con Python 2.03
 
-require 'yaml'
-require_relative './funciones'
-require_relative './htm'
+require "yaml"
+require_relative "./funciones"
+require_relative "./htm"
 
 # Librería para renderizar controles BULMA HTML
 module Bulma
   # Primer orden
   # boton con acción
-  def self.boton(texto, action, style = 'link')
+  def self.boton(texto, action, style = "link")
     "<a class='button is-#{style}' href='#{action}'>#{texto}</a>"
   end
 
@@ -21,21 +22,23 @@ module Bulma
     Htm.enlace(accion, faicon(icono), titulo)
   end
 
-  def self.campo(texto, tipo = '')
+  def self.etiqueta(texto)
+    "<label class='label'>#{texto}</label>"
+  end
+
+  def self.campo(texto, tipo = "")
     str_tipo = case tipo
-               when 'H'
-                 'field is-horizontal'
-               when 'G'
-                 'field is-grouped'
-               else
-                 'field'
-               end
+    when "H" then "field is-horizontal"
+    when "G" then "field is-grouped"
+    else
+      "field"
+    end
     Htm.div(texto, str_tipo)
   end
 
   # Boton cancelar
   def self.boton_cancelar(accion)
-    cadena = +''
+    cadena = +""
     cadena << "<a href='#' title='Cancelar'><span class='icon'><i class='fas fa-window-close'"
     cadena << " onClick=\"if(confirm('¿Desea cancelar?')) "
     cadena << "window.location='#{accion}"
@@ -43,14 +46,14 @@ module Bulma
   end
 
   def self.control(texto)
-    Htm.div(texto, 'control')
+    Htm.div(texto, "control")
   end
 
   def self.cuerpo_campo(texto)
-    Htm.div(texto, 'field-body')
+    Htm.div(texto, "field-body")
   end
 
-  def self.faicon(icono, color = 'grey')
+  def self.faicon(icono, color = "grey")
     Htm.span("<i class='#{icono}'></i>", "icon has-text-#{color}")
   end
 
@@ -58,93 +61,93 @@ module Bulma
   def self.boton_cerrar(retorno)
     cadena = +"<a class='button is-light is-small' href='#{retorno}'>"
     cadena2 = "<i class='fas fa-window-close'></i>"
-    cadena << Htm.span(cadena2, 'icon is-small') << Htm.span('Cerrar') << '</a>'
-    Htm.div(cadena, 'buttons is-right')
+    cadena << Htm.span(cadena2, "icon is-small") << Htm.span("Cerrar") << "</a>"
+    Htm.div(cadena, "buttons is-right")
   end
 
   # Segundo orden
   # Pone una imagen de eliminar cliqueable
   def self.boton_detalles(accion)
-    boton_accion('Detalles', accion, 'fas fa-info')
+    boton_accion("Detalles", accion, "fas fa-info")
   end
 
   # Pone una imagen de eliminar cliqueable
   def self.boton_editar(accion)
-    boton_accion('Editar', accion, 'fas fa-edit')
+    boton_accion("Editar", accion, "fas fa-edit")
   end
 
   # Pone una imagen de eliminar cliqueable, saca diálogo para confirmar
   def self.boton_eliminar(accion)
-    cadena = +''
+    cadena = +""
     cadena << "<a href='#' title='Eliminar'>"
     cadena2 = +"<i class='fas fa-trash-alt'"
     cadena2 << " onClick=\"if(confirm('¿Desea eliminar este dato?')) "
     cadena2 << "window.location='#{accion}';\"></i>"
     # div(span(cadena2, 'icon has-text-danger'), 'icon-text')
     # cadena << Htm.span(cadena2, 'icon') << '</a>'
-    cadena << Htm.span(cadena2, 'icon has-text-danger') << '</a>'
+    cadena << Htm.span(cadena2, "icon has-text-danger") << "</a>"
   end
 
   # Pone un boton para ver un gráfico
   def self.boton_grafica(accion)
-    boton_accion('Gráfica', accion, 'fas fa-chart-line')
+    boton_accion("Gráfica", accion, "fas fa-chart-line")
   end
 
   # Boton con imagen de llamar x telefono
   def self.boton_llamar(accion)
-    boton_accion('Llamada', accion, 'fas fa-phone')
+    boton_accion("Llamada", accion, "fas fa-phone")
   end
 
   def self.boton_seleccionar(accion)
-    boton_accion('Seleccionar', accion, 'fas fa-hand-pointer')
+    boton_accion("Seleccionar", accion, "fas fa-hand-pointer")
   end
 
   # Imprime boton de enviar formulario con texto = Aceptar
   def self.botones(url)
-    cadena = +''
-    cadena << etiqueta_campo('')
+    cadena = +""
+    cadena << etiqueta_campo("")
     cadena << control("<button type='submit' class='button is-link'>Aceptar</button>")
     cadena2 = +"<button type='reset' class='button is-light'"
     cadena2 << " onClick=\"window.location.href='#{url}'\">Cancelar</button>\n"
-    cadena << Htm.div(cadena2, 'control')
-    campo(cadena, 'G')
+    cadena << Htm.div(cadena2, "control")
+    campo(cadena, "G")
   end
 
   # Imprime boton de enviar formulario con texto = Aceptar
-  def self.botones_formulario(texto_aceptar = 'Aceptar', url_cancelar = '')
-    cadena = +''
-    cadena << etiqueta_campo('')
-    cadena << Htm.div("<button type='submit' class='button is-link'>#{texto_aceptar}</button>\n", 'control')
+  def self.botones_formulario(texto_aceptar = "Aceptar", url_cancelar = "")
+    cadena = +""
+    cadena << etiqueta_campo("")
+    cadena << Htm.div("<button type='submit' class='button is-link'>#{texto_aceptar}</button>\n", "control")
     cadena2 = +"<button type='reset' class='button is-light'"
     cadena2 << " onClick=\"window.location.href='#{url_cancelar}'\">Cancelar</button>\n"
-    cadena << Htm.div(cadena2, 'control')
-    campo(cadena, 'G')
+    cadena << Htm.div(cadena2, "control")
+    campo(cadena, "G")
   end
 
   # Combo box con opciones en un campo
-  def self.campo_combo(texto, listado, variable, defecto = '')
-    cadena = +''
+  def self.campo_combo(texto, listado, variable, defecto = "")
+    cadena = +""
     cadena << etiqueta_campo(texto)
     cadena << cuerpo_campo(control(Htm.combo(listado, variable, defecto)))
-    campo(cadena, 'H')
+    campo(cadena, "H")
   end
 
   def self.etiqueta_campo(texto)
-    Htm.div(Htm.etiqueta(texto, 'label'), 'field-label')
+    Htm.div(Htm.etiqueta(texto, "label"), "field-label")
   end
 
   # Imprime 2 celdas, una con texto y otra con un checkbox
   def self.input_check(texto, variable, valor)
-    cadena = +''
+    cadena = +""
     cadena << etiqueta_campo(texto)
     adicional = if valor.is_a? TrueClass
-                  'checked'
-                else
-                  valor.to_i.positive? ? 'checked' : ''
-                end
+      "checked"
+    else
+      valor.to_i.positive? ? "checked" : ""
+    end
     chk = "<INPUT TYPE='checkbox' NAME='#{variable}' VALUE='1' #{adicional}>"
     cadena << cuerpo_campo(campo(control(chk)))
-    campo(cadena, 'H')
+    campo(cadena, "H")
   end
 
   # Checkbox en 2 columnas
@@ -155,26 +158,41 @@ module Bulma
 
   # Checkbox en 2 columnas 2
   def self.input_check2(texto, variable, valor)
-    cadena = +''
+    cadena = +""
     cadena << cuerpo_campo(input_check(texto, variable, valor))
-    cadena << '</div>'
+    cadena << "</div>"
+  end
+
+  def self.combo(campo_bdd, resultado, campos, val)
+    cad = +"<select name='#{campo_bdd}' id='#{campo_bdd}'>\n"
+    if val == "" || val.nil?
+      cad << "<option value='' selected='selected'>Sin datos</option>\n"
+    end
+    resultado.each do |fil|
+      cad << "<option value='#{fil.send(campos[0])}' "
+      if fil.send(campos[0]).to_s == val.to_s
+        cad << "selected='selected'"
+      end
+      cad << ">#{fil.send(campos[1])}</option>\n"
+    end
+    cad << "</select>\n"
+  end
+
+  def self.entrada(valor, tipo, clase = "button is-link")
+    # Devuelve HTML input
+    "<input class='#{clase}' type='#{tipo}' value='#{valor}'>"
   end
 
   # Linea con celda con texto y otra con combobox
   def self.input_combo(texto, campo_bdd, resultado, campos, valor)
-    cad1 = +''
+    cad1 = +""
     cad1 << etiqueta_campo(texto)
     cadena = +"<div class='control'>\n"
-    cadena << "<div class ='select'>\n<select name='#{campo_bdd}' id='#{campo_bdd}'>\n"
-    cadena << "<option value='' selected='selected'>Sin datos</option>\n" if valor == '' || valor.nil?
-    resultado.each do |fil|
-      cadena << "<option value='#{fil[campos[0]]}' "
-      cadena << "selected='selected'" if fil[campos[0]].to_s == valor.to_s
-      cadena << ">#{fil[campos[1]]}</option>\n"
-    end
-    cadena << "</select></div>\n</div>\n"
+    cadena << "<div class ='select'>\n"
+    cadena << combo(campo_bdd, resultado, campos, valor)
+    cadena << "</div>\n</div>\n"
     cad1 << cuerpo_campo(campo(cadena))
-    campo(cad1, 'H')
+    campo(cad1, "H")
   end
 
   # Linea con celda con texto y otra con combobox. para poner lado a lado
@@ -183,39 +201,29 @@ module Bulma
     cadena << etiqueta_campo(texto)
     cadena2 = +"<div class='field is-expanded'>\n"
     cadena2 << "<p class='control is-expanded'>\n"
-    cadena2 << "<div class ='select is-fullwidth'>\n<select name='#{campo_bdd}' id='#{campo_bdd}'>\n"
-    cadena2 << "<option value='' selected='selected'>Sin datos</option>\n" if valor == '' || valor.nil?
-    resultado.each do |fil|
-      cadena2 << "<option value='#{fil[campos[0]]}' "
-      cadena2 << "selected='selected'" if fil[campos[0]].to_s == valor.to_s
-      cadena2 << ">#{fil[campos[1]]}</option>\n"
-    end
-    cadena2 << "</select></div>\n</p>\n</div>\n"
-    cadena << Htm.div(cadena2, 'field-body')
+    cadena2 << "<div class ='select is-fullwidth'>\n"
+    cadena2 << combo(campo_bdd, resultado, campos, valor)
+    cadena2 << "</div>\n</p>\n</div>\n"
+    cadena << Htm.div(cadena2, "field-body")
   end
 
   # Linea con celda con texto y otra con combobox. para poner lado a lado
   def self.input_combo2(texto, campo_bdd, resultado, campos, valor)
-    cadena = +''
+    cadena = +""
     cadena << etiqueta_campo(texto)
     cadena2 = +"<div class='field is-expanded'>\n"
     cadena2 << "<p class='control is-expanded'>\n"
-    cadena2 << "<div class ='select is-fullwidth'>\n<select name='#{campo_bdd}' id='#{campo_bdd}'>\n"
-    cadena2 << "<option value='' selected='selected'>Sin datos</option>\n" if valor == '' || valor.nil?
-    resultado.each do |fil|
-      cadena2 << "<option value='#{fil[campos[0]]}' "
-      cadena2 << "selected='selected'" if fil[campos[0]].to_s == valor.to_s
-      cadena2 << ">#{fil[campos[1]]}</option>\n"
-    end
-    cadena2 << "</select></div>\n</p>\n</div>"
-    cadena << Htm.div(cadena2, 'field-body')
+    cadena2 << "<div class ='select is-fullwidth'>\n"
+    cadena2 << combo(campo_bdd, resultado, campos, valor)
+    cadena2 << "</div>\n</p>\n</div>"
+    cadena << Htm.div(cadena2, "field-body")
     cadena << "</div>\n"
   end
 
   # Imprime un campo de ingreso de valor numerico
   def self.input_entero(texto, campo_bdd, valor, minimo = nil, maximo = nil)
     tex = texto.to_s
-    valor = '0' if (valor.is_a? String) && valor.empty?
+    valor = "0" if (valor.is_a? String) && valor.empty?
     numero = numero(valor)
     cdn2 = etiqueta_campo(tex)
     cadena = +"<div class='control'>"
@@ -229,20 +237,20 @@ module Bulma
       cadena << "max=#{maximo} "
     end
     cadena << "name='#{campo_bdd}' value='#{numero}' id='#{campo_bdd}' step='1'>"
-    cadena << '</div>'
+    cadena << "</div>"
     cdn3 = cdn2 + cuerpo_campo(cadena)
-    campo(cdn3, 'H')
+    campo(cdn3, "H")
   end
 
   # Crea celdas contiguas con texto y campo de texto
   def self.input_fecha(texto, campo_bdd, valor)
-    cadena = +''
+    cadena = +""
     cadena << etiqueta_campo(texto)
     entrada = +"<input class='input' type='date' placeholder='dd/mm/aaaa' "
     entrada << "min='1920-01-01' max='2120-12-31' "
     entrada << "name='#{campo_bdd}' value='#{valor}' id='#{campo_bdd}'>\n"
     cadena << cuerpo_campo(campo(control(entrada)))
-    campo(cadena, 'H')
+    campo(cadena, "H")
   end
 
   # Crea celdas contiguas con texto y campo de texto
@@ -255,47 +263,57 @@ module Bulma
     cadena2 << "min='1920-01-01' max='2120-12-31' "
     cadena2 << "name='#{campo_bdd}' value='#{valor}' id='#{campo_bdd}'>\n"
     cadena2 << "</p>\n</div>\n"
-    cadena << Htm.div(cadena2, 'field-body')
+    cadena << Htm.div(cadena2, "field-body")
   end
 
   def self.input_fecha2(texto, campo_bdd, valor)
-    cadena = +''
-    cadena << Htm.div(Htm.etiqueta(texto, 'label'), 'field-label is-normal')
+    cadena = +""
+    cadena << Htm.div(Htm.etiqueta(texto, "label"), "field-label is-normal")
     cadena2 = +"<div class='field is-expanded'>\n"
     cadena2 << "<p class='control is-expanded'>\n"
     cadena2 << "<input class='input' type='date' placeholder='dd/mm/aaaa' "
     cadena2 << "min='1920-01-01' max='2120-12-31' "
     cadena2 << "name='#{campo_bdd}' value='#{valor}' id='#{campo_bdd}'>\n"
     cadena2 << "</p>\n</div>"
-    cadena << Htm.div(cadena2, 'field-body')
+    cadena << Htm.div(cadena2, "field-body")
     cadena << "</div>\n"
   end
 
   def self.input_hora(texto, campo_bdd, valor)
-    cadena = +''
+    cadena = +""
     cadena << etiqueta_campo(texto)
-    cadena << cuerpo_campo(campo(control(Htm.entrada('time', texto, campo_bdd, valor))))
-    campo(cadena, 'H')
+    cadena << cuerpo_campo(campo(control(Htm.entrada("time", texto, campo_bdd, valor))))
+    campo(cadena, "H")
+  end
+
+  def self.input_fecha_hora(texto, campo_bdd, val)
+    # Implementación del control HTML5 datetime
+    cad = etiqueta_campo(texto)
+    if val == ""
+      val = tiempo.hoy_iso + " " + tiempo.ahora
+    end
+    cad << cuerpo_campo(campo(control(htm.entrada("datetime-local", texto, campo_bdd, val))))
+    campo(cad, "H")
   end
 
   # Imprime una linea con una celda con texto y otra con un campo memo
   def self.input_memo(texto, campo_bdd, valor)
-    valor = '' if valor.nil?
-    cadena = +''
+    valor = "" if valor.nil?
+    cadena = +""
     cadena << etiqueta_campo(texto)
     ctrl = "<textarea class='textarea' name='#{campo_bdd}' placeholder='#{texto}'>#{valor}</textarea>"
     cadena << cuerpo_campo(campo(control(ctrl)))
-    campo(cadena, 'H')
+    campo(cadena, "H")
   end
 
   # Imprime un campo de ingreso de valor numerico
   def self.input_numero(texto, campo_bdd, valor, decimales = 2)
-    valor = '0' if (valor.is_a? String) && valor.empty?
+    valor = "0" if (valor.is_a? String) && valor.empty?
     num = numero(valor, decimales)
-    cadena = +''
+    cadena = +""
     cadena << etiqueta_campo(texto)
-    cadena << cuerpo_campo(campo(control(Htm.entrada('number', texto, campo_bdd, num))))
-    campo(cadena, 'H')
+    cadena << cuerpo_campo(campo(control(Htm.entrada("number", texto, campo_bdd, num))))
+    campo(cadena, "H")
   end
 
   def self.input_numero1(texto, campo_bdd, valor, decimales = 2)
@@ -304,37 +322,37 @@ module Bulma
   end
 
   def self.input_numero2(texto, campo_bdd, valor, decimales = 2)
-    cadena = +''
+    cadena = +""
     cadena << input_numero(texto, campo_bdd, valor, decimales)
-    cadena << '</div>'
+    cadena << "</div>"
   end
 
   def self.input_password(texto, campo_bdd, valor)
-    cadena = +''
+    cadena = +""
     cadena << etiqueta_campo(texto)
-    cadena << cuerpo_campo(control(Htm.entrada('password', texto, campo_bdd, valor)))
-    campo(cadena, 'H')
+    cadena << cuerpo_campo(control(Htm.entrada("password", texto, campo_bdd, valor)))
+    campo(cadena, "H")
   end
 
   # arreglo es un DICCIONARIO con texto y valor del item
   def self.input_radio(texto, variable, arreglo, valor)
-    radio = +''
+    radio = +""
     arreglo.each do |llave, dato|
-      chkd = dato == valor ? 'checked' : ''
-      radio << Htm.etiqueta("<input type='radio' name='#{variable}' value='#{dato}' #{chkd}> #{llave}", 'radio')
+      chkd = dato == valor ? "checked" : ""
+      radio << Htm.etiqueta("<input type='radio' name='#{variable}' value='#{dato}' #{chkd}> #{llave}", "radio")
     end
-    cadena = +''
+    cadena = +""
     cadena << etiqueta_campo(texto)
     cadena << cuerpo_campo(campo(control(radio)))
-    campo(cadena, 'H')
+    campo(cadena, "H")
   end
 
   # Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar
   def self.input_texto(texto, campo_bdd, valor)
-    cadena = +''
+    cadena = +""
     cadena << etiqueta_campo(texto)
-    cadena << cuerpo_campo(campo(control(Htm.entrada('text', texto, campo_bdd, valor))))
-    campo(cadena, 'H')
+    cadena << cuerpo_campo(campo(control(Htm.entrada("text", texto, campo_bdd, valor))))
+    campo(cadena, "H")
   end
 
   # Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar
@@ -345,40 +363,40 @@ module Bulma
 
   # Imprime celda con un texto y campo para llenarlo, el ancho se puede determinar
   def self.input_texto2(texto, campo_bdd, valor)
-    cadena = +''
+    cadena = +""
     cadena << input_texto(texto, campo_bdd, valor)
-    cadena << '</div>'
+    cadena << "</div>"
   end
 
   def self.nav_bar(enlace, icono, texto)
     cadena = +"<a class='navbar-item' href='#{enlace}'>"
-    cadena << faicon(icono) << Htm.span(texto) << '</a>'
+    cadena << faicon(icono) << Htm.span(texto) << "</a>"
   end
 
   # PIE de pagina
   def self.pie(txt_enlace)
     cadena = +"<footer class='footer'>\n"
-    cadena << Htm.div(boton('Volver', txt_enlace), 'content has-text-centered')
+    cadena << Htm.div(boton("Volver", txt_enlace), "content has-text-centered")
     cadena << "</footer>\n"
     cadena << Htm.fin_pagina
   end
 
   def self.rango_fechas(fini = nil, ffin = nil, accion)
-    cadena = +''
-    cadena << Htm.form_edicion('Seleccionar fechas', accion)
-    cadena << input_fecha1('Inicio', 'fini', fini)
-    cadena << input_fecha2('Fin', 'ffin', ffin)
-    cadena << Htm.div("<input class='button is-link' type='submit' value='Buscar'>", 'control')
+    cadena = +""
+    cadena << Htm.form_edicion("Seleccionar fechas", accion)
+    cadena << input_fecha1("Inicio", "fini", fini)
+    cadena << input_fecha2("Fin", "ffin", ffin)
+    cadena << Htm.div("<input class='button is-link' type='submit' value='Buscar'>", "control")
     cadena << Htm.form_edicion_fin
   end
 
   def self.script_file
-    cadena = +''
+    cadena = +""
     cadena << "const fileInput = document.querySelector('#fileupld input[type=file]');"
-    cadena << 'fileInput.onchange = () => {'
-    cadena << 'if (fileInput.files.length > 0) {'
+    cadena << "fileInput.onchange = () => {"
+    cadena << "if (fileInput.files.length > 0) {"
     cadena << "const fileName = document.querySelector('#fileupld .file-name');"
-    cadena << 'fileName.textContent = fileInput.files[0].name;'
+    cadena << "fileName.textContent = fileInput.files[0].name;"
     cadena << "}\n}\n"
     Htm.script(cadena)
   end
@@ -391,34 +409,34 @@ module Bulma
     cadena << "<a role='button' class='navbar-burger' aria-label='menu' aria-expanded='false' "
     cadena << "data-target='navbarBasicExample'>"
     cadena << "<span aria-hidden='true'></span><span aria-hidden='true'></span><span aria-hidden='true'></span>"
-    cadena << '</a></div>'
+    cadena << "</a></div>"
     cadena << "<div id='navbarBasicExample' class='navbar-menu'><div class='navbar-start'>"
-    cadena << nav_bar('/', 'fas fa-home', 'Inicio')
-    cadena << nav_bar('/recepcion', 'fas fa-headset', 'Recepción')
-    cadena << nav_bar('/administracion', 'fas fa-dollar-sign', 'Administración')
-    cadena << nav_bar('/vehiculos', 'fas fa-ambulance', 'Vehículos')
-    cadena << nav_bar('/direccion', 'fas fa-cogs', 'Dirección')
-    cadena << nav_bar('/direccion_tecnica', 'fas fa-user-md', 'Dir.Técnica')
-    cadena << nav_bar('/sistema', 'fas fa-desktop', 'Sistema')
-    cadena << '</div>'
+    cadena << nav_bar("/", "fas fa-home", "Inicio")
+    cadena << nav_bar("/recepcion", "fas fa-headset", "Recepción")
+    cadena << nav_bar("/administracion", "fas fa-dollar-sign", "Administración")
+    cadena << nav_bar("/vehiculos", "fas fa-ambulance", "Vehículos")
+    cadena << nav_bar("/direccion", "fas fa-cogs", "Dirección")
+    cadena << nav_bar("/direccion_tecnica", "fas fa-user-md", "Dir.Técnica")
+    cadena << nav_bar("/sistema", "fas fa-desktop", "Sistema")
+    cadena << "</div>"
     cadena << "<div class='navbar-end'><div class='navbar-item'><div class='buttons'>"
-    cadena << "<a class='button is-warning' href='/logout'>#{faicon('fas fa-sign-out-alt')}<strong>Salir</strong></a>"
-    cadena << '</div></div></div></div></nav>'
+    cadena << "<a class='button is-warning' href='/logout'>#{faicon("fas fa-sign-out-alt")}<strong>Salir</strong></a>"
+    cadena << "</div></div></div></div></nav>"
   end
 
   def self.file_upload(destino, retorno)
-    cadena = +''
+    cadena = +""
     cadena << "<form action='#{destino}' method='post' enctype='multipart/form-data'>"
     cadena << "<div id='fileupld' class='file has-name'>"
     cadena << "<label class='file-label'>"
     cadena << "<input class='file-input' type='file' name='file'>"
-    cadena2 = Htm.span("<i class='fas fa-upload'></i>", 'file-icon')
-    cadena2 << Htm.span('Seleccione un archivo...', 'file-label')
-    cadena <<  Htm.span(cadena2, 'file-cta')
-    cadena << Htm.span('...', 'file-name')
-    cadena << '</label>'
+    cadena2 = Htm.span("<i class='fas fa-upload'></i>", "file-icon")
+    cadena2 << Htm.span("Seleccione un archivo...", "file-label")
+    cadena << Htm.span(cadena2, "file-cta")
+    cadena << Htm.span("...", "file-name")
+    cadena << "</label>"
     cadena << botones(retorno)
-    cadena << '</div></form>'
+    cadena << "</div></form>"
     cadena << script_file
   end
 
@@ -436,11 +454,57 @@ module Bulma
     cadena << "<ul class='menu-list'>"
     items.each do |indice, item|
       cadena << if indice == num_activo
-                  "<li><a class='is-active' href='#{item[0]}'>#{faicon(item[1], 'white')}#{item[2]}</a></li>"
-                else
-                  "<li><a href='#{item[0]}'>#{faicon(item[1])} #{item[2]}</a></li>"
-                end
+        Htm.lista("<a class='is-active' href='#{item[0]}'>#{faicon(item[1], "white")}#{item[2]}</a>")
+      else
+        Htm.lista("<a href='#{item[0]}'>#{faicon(item[1])} #{item[2]}</a>")
+      end
     end
-    cadena << '</ul></aside>'
+    cadena << "</ul></aside>"
+  end
+
+  def encabezado(nivel, texto)
+    # Imprime un encabezado con nivel
+    niveles = ["", " is-4", " is-5", " is-6"]
+    cadena = +"<h#{nivel} class='title#{niveles[nivel - 1]}"
+    cadena << "'>#{texto}</h#{nivel}>"
+  end
+
+  def celda_menu(texto, enl, icono, ayuda = "")
+    # Pone una celda del menu
+    # 1
+    cadena = +"<div class='tile is-child is-info box'>\n"
+    cadena << "<a href='#{enl}'>"
+    cadena << "<p class='title' align='center'>{texto}</p></a>\n"
+    cadena << "<a href='#{enl}'>"
+    cadena << "<div class='level'><div class='level-item has-text-centered'>\n"
+    cadena << "<figure class='image is-96x96'>\n"
+    cadena << "<img src='/img/#{icono}'>\n"
+    cadena << '</figure>\n'
+    cadena << '</div>\n</div>\n'
+    cadena << '</a>\n'
+    # 2
+    cadena << "<div class='content'>\n"
+    cadena << ayuda
+    # cierra 2
+    cadena << "</div>\n"
+    # Cierra 1
+    cadena << "</div>"
+  end
+
+  def encabezado_tabla(arr, fuente = 6)
+    # A partir de un array arma el encabezado de una tabla
+    # cad = "<div class='table-container is-size-%s'>" % fuente
+    cad = +"<div style='display: grid'>"
+    cad << "<div class='table-container is-size-#{fuente}'>\n"
+    cad << "<table class='table is-hoverable'><thead><tr>\n"
+    arr.each do |lin|
+      cad << Htm.celda_encabezado(lin)
+    end
+    cad << "</tr>\n</thead>\n<tbody>\n"
+  end
+
+  def fin_tabla
+    # Imprime tags de finalizacion de una tabla. Versión Bulma
+    "</tbody>\n</table>\n</div>\n</div>\n"
   end
 end
