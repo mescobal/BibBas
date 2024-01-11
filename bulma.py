@@ -5,8 +5,9 @@ Ver 2.03 agrego typing Optional a generar_menu
 """
 
 import typing
-from lib import dinero, tiempo
-from lib import htm
+import dinero
+import tiempo
+import htm
 
 # Primer orden
 
@@ -306,7 +307,6 @@ def input_numero(texto, campo_bdd, val, decimales=2):
         val = '0'
     num = dinero.numero(val, decimales)
     cad = etiqueta_campo(texto)
-    paso = 0
     if decimales == 2:
         paso = "0.01"
     elif decimales == 1:

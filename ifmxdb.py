@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """ Nota: para ejecutar via servidor web, hay que habilitar a www-data: poner en
     /etc/environment las lineas
     ODBCINI=/etc/odbc.ini
-    INFORMIXSERVER=ol_camcel
+    INFORMIXSERVER=nombre_del_servidor
     INFORMIXDIR=/opt/IBM/Informix_Client-SDK
     INFORMIXSQLHOSTS=/opt/IBM/Informix_Client-SDK/etc/sqlhosts
     LD_LIBRARY_PATH=/opt/IBM/Informix_Client-SDK/lib:/opt/IBM/Informix_Client-SDK/lib/esql:
@@ -17,7 +16,7 @@ import pyodbc
 
 class Ifmx(object):
     """Clase para conectarse a Informix"""
-    def __init__(self, odbc_dsn="camcel"):
+    def __init__(self, odbc_dsn="nombre_del_dsn"):
         """Conexión a informix con configuración de codificación de caracteres
         hecha a prueba y error. Probablemente se pueda configurar mejor con la
         documentación adecuada"""
@@ -45,7 +44,7 @@ class Ifmx(object):
             # SQL_CHAR: 'utf-16' -> ANDA en algunos casos de error de codif
             # SQL_CHAR: 'utf-32le' -> ANDA en la mayoría de los casos
             # ENCODING
-            cone.setencoding(str, self.encoding)
+            cone.setencoding(self.encoding)
             cone.setencoding(encoding='utf-8')
             self.cursor = cone.cursor()
         except pyodbc.Error as exce:
@@ -96,7 +95,3 @@ class Ifmx(object):
             self.columnas = [column[0] for column in self.cursor.description]
         except pyodbc.Error as exce:
             print(exce)
-
-
-if __name__ == "__main__":
-    print("Para usar solo como módulo")
