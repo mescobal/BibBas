@@ -1,3 +1,5 @@
+"""Módulo para manejo de variables ligadas a dinero"""
+
 import decimal
 import typing
 
@@ -98,5 +100,5 @@ def redondeo(cifra, digitos=0):
     if not isinstance(cifra, decimal.Decimal):
         cifra = decimal.Decimal(str(cifra))
     nume = decimal.Decimal("1")
-    denomi = (decimal.Decimal('10') ** digitos)
+    denomi = decimal.Decimal('10') ** digitos
     return cifra.quantize(nume / denomi, decimal.ROUND_HALF_UP)

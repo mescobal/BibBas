@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Modulo para interactuar con base de datos. Puede definirse un motor
 Version 5.23: autofiltrar al buscar por indice (ir_a)
 """
@@ -8,78 +7,83 @@ import psycopg2.extras
 from lib import ifmxdb
 
 
-class Datos(object):
-    """Encapsula llamadas al motor de base de datos"""
-    def __init__(self, motor, data=""):
-        # Asigna valores a atributos del objeto Datos
-        self.motor = motor
-        self.num_filas = 0
-        if self.motor == "ifmx":
-            # Falta adecuar la configuracion de informix
-            self.ifmx = ifmxdb.Ifmx()
-        elif self.motor == "pg":
-            self.datab = psycopg2.connect(host='100.0.2.65', database="magik", user="postgres", password="postgres")
-            # noinspection PyArgumentList
-            self.cursor = self.datab.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        else:
-            # la opcion por defecto es sqlite
-            # la extensión es "db"
-            self.data = data
-            try:
-                # Directorio por defecto "./datos"
-                self.datab = sqlite3.connect("./datos/" + self.data + ".db",  detect_types=sqlite3.PARSE_DECLTYPES)
-                self.datab.row_factory = sqlite3.Row
-                self.cursor = self.datab.cursor()
-            except sqlite3.Error as error:
-                print(error)
+class Datos
+  """Encapsula llamadas al motor de base de datos"""
+  def initialize(motor, data="")
+    # Asigna valores a atributos del objeto Datos
+    @motor = motor
+    @num_filas = 0
+    if @self.motor == "ifmx"
+      # Falta adecuar la configuracion de informix
+      @ifmx = ifmxdb.Ifmx()
+    elsif @motor == "pg"
+      @datab = psycopg2.connect(host='100.0.2.65', database="magik", user="postgres", password="postgres")
+      # noinspection PyArgumentList
+      @cursor = self.datab.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    else
+      # la opcion por defecto es sqlite
+      # la extensión es "db"
+      @data = data
+      begin
+        # Directorio por defecto "./datos"
+        @datab = sqlite3.connect("./datos/" + @data + ".db",  detect_types=sqlite3.PARSE_DECLTYPES)
+        @datab.row_factory = sqlite3.Row
+        @cursor = self.datab.cursor()
+      rescue sqlite3.Error => error
+        print(error)
+      end
+    end
+  end
 
-    def ejecutar(self, sql):
-        """Rutina genérica de ejecución de SQL levanta error si corresponde"""
-        try:
-            self.cursor.execute(sql)
-            self.datab.commit()
-        except RuntimeError as error:
-            print(error)
+  # Rutina genérica de ejecución de SQL levanta error si corresponde
+  def ejecutar(sql)
+    begin
+      @cursor.execute(sql)
+      @datab.commit
+    rescue RuntimeError => error
+      puts error
+    end
+  end
+end
 
+# Clase para interactuar con una tabla genérica
+class Tabla < Datos
+  def initialize(motor, table, clave="id", data="", ins_clave=false)
+    # Ojo! debería rise un error si tabla no existe
+    # Si no se especifica nada el campo Key es ID
+    @id_insertada = 0
+    @bdd = data
+    @tabla = table
+    @estructura = {}
+    @orden = ""
+    @limite = ""
+    @filtro = ""
+    @encontrado = false
+    @campos = {}
+    super(motor, data=@bdd)
+    # Campo que funciona como clave
+    @clave = clave
+    # define si al insertar se inserta o no el valor del campo clave (x ej si es autonum)
+    @insertar_clave = ins_clave
+    # Lee un registro y lo almacena en el diccionario interno
+    # si la tabla no existe, DEBERIA dar un mensaje de error
+    @registro = {}
+    @resultado = {}
+    sql = "SELECT * FROM " + @tabla + " LIMIT 1"
+    @cursor.execute(sql)
+    asignar_campos
+    asignar_datos(sql)
+  end
 
-class Tabla(Datos):
-    """Clase para interactuar con una tabla genérica"""
-    def __init__(self, motor, table, clave="id", data="", ins_clave=False):
-        """Al inicializar debería ini el diccionario y cargar un registro con valores"""
-        # Ojo! debería rise un error si tabla no existe
-        # Si no se especifica nada el campo Key es ID
-        self.id_insertada = 0
-        self.bdd = data
-        self.tabla = table
-        self.estructura = {}
-        self.orden = ""
-        self.limite = ""
-        self.filtro = ""
-        self.encontrado = False
-        self.campos = {}
-        Datos.__init__(self, motor, data=self.bdd)
-        # Campo que funciona como clave
-        self.clave = clave
-        # define si al insertar se inserta o no el valor del campo clave (x ej si es autonum)
-        self.insertar_clave = ins_clave
-        # Lee un registro y lo almacena en el diccionario interno
-        # si la tabla no existe, DEBERIA dar un mensaje de error
-        self.registro = {}
-        self.resultado = {}
-        sql = "SELECT * FROM " + self.tabla + " LIMIT 1"
-        self.cursor.execute(sql)
-        self.asignar_campos()
-        self.asignar_datos(sql)
-
-    def asignar_campos(self):
-        """Asigna descripciones de campos de la tabla abierta"""
-        tipos = {5: "DOUBLE", 7: "TIMESTAMP", 8: "BIGINT", 10: "DATE",
-                 246: "DECIMAL", 253: "VARCHAR", 254: "CHAR"}
-        # Fin de asignación de datos de campos ===================
-        for item in self.cursor.description:
-            campo = item[0]
-            self.registro[campo] = None
-            if item[1] in tipos:
+  #Asigna descripciones de campos de la tabla abierta
+  def asignar_campos
+    tipos = {5: "DOUBLE", 7: "TIMESTAMP", 8: "BIGINT", 10: "DATE",
+             246: "DECIMAL", 253: "VARCHAR", 254: "CHAR"}
+    # Fin de asignación de datos de campos ===================
+    @cursor.description.each do |item|
+      campo = item[0]
+      @registro[campo] = nil
+      if item[1] in tipos:
                 # si item 1 está en la lista de tipos, ponerlo
                 tipo = tipos[item[1]]
             else:
