@@ -21,6 +21,7 @@ def entero_pelado(num):
 
 
 def str_to_float(cadena: str) -> float:
+    """Convierte cadena a flotante"""
     cadena = cadena.replace(" ", "")
     # cadena = cadena.replace("-","")
     cadena = cadena.replace("$", "")

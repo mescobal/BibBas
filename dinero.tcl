@@ -1,25 +1,21 @@
-"""Manejo de monedas"""
+# Manejo de monedas
+package require math::decimal
+package provide dinero
 
-import decimal
-import typing
+set UNIDADES  {"" "UN " "DOS " "TRES " "CUATRO " "CINCO " "SEIS " "SIETE "
+            "OCHO " "NUEVE " "DIEZ " "ONCE " "DOCE " "TRECE " "CATORCE "
+            "QUINCE " "DIECISEIS " "DIECISIETE " "DIECIOCHO " "DIECINUEVE " "VEINTE "}
+set DECENAS {"VENTI" "TREINTA " "CUARENTA " "CINCUENTA " "SESENTA "
+           "SETENTA " "OCHENTA " "NOVENTA " "CIEN "}
+set CENTENAS {"CIENTO " "DOSCIENTOS " "TRESCIENTOS " "CUATROCIENTOS "
+            "QUINIENTOS " "SEISCIENTOS " "SETECIENTOS " "OCHOCIENTOS " "NOVECIENTOS "}
 
-UNIDADES = ('', 'UN ', 'DOS ', 'TRES ', 'CUATRO ', 'CINCO ', 'SEIS ', 'SIETE ',
-            'OCHO ', 'NUEVE ', 'DIEZ ', 'ONCE ', 'DOCE ', 'TRECE ', 'CATORCE ',
-            'QUINCE ', 'DIECISEIS ', 'DIECISIETE ', 'DIECIOCHO ',
-            'DIECINUEVE ', 'VEINTE ')
-DECENAS = ('VENTI', 'TREINTA ', 'CUARENTA ', 'CINCUENTA ', 'SESENTA ',
-           'SETENTA ', 'OCHENTA ', 'NOVENTA ', 'CIEN ')
-
-CENTENAS = ('CIENTO ', 'DOSCIENTOS ', 'TRESCIENTOS ', 'CUATROCIENTOS ',
-            'QUINIENTOS ', 'SEISCIENTOS ', 'SETECIENTOS ', 'OCHOCIENTOS ',
-            'NOVECIENTOS ')
-
-
-def a_palabras(number) -> str:
-    """Convierte un número en representación alfabética"""
-    converted = ''
-    if not 0 < number < 999999999:
+proc aPalabras{number} {
+    # Convierte un número en representación alfabética
+    set converted ""
+    if not 0 < number < 999999999 {
         return 'No es posible convertir el numero a letras'
+    }
     number_str = str(number).zfill(9)
     millones = number_str[:3]
     miles = number_str[3:6]
@@ -41,7 +37,7 @@ def a_palabras(number) -> str:
             converted += '%s ' % convertir_numero(cientos)
     converted += 'PESOS'
     return converted.title()
-
+}
 
 def convertir_numero(num) -> str:
     """largo máximo 3 dígitos"""

@@ -43,7 +43,7 @@ def str_cientos(cientos)
   end
 end
 
-# Convierte un numero en representacion alfabetica
+# Convierte un numero en representación alfabética
 def a_palabras(number)
   converted = ''
   return 'No es posible convertir el numero a letras' unless number.between?(0, 999_999_999)
@@ -51,7 +51,7 @@ def a_palabras(number)
   number_str = number.to_s.zfill(9)
   millones = number_str[0..3]
   miles = number_str[3..6]
-  cientos = number_str[6..-1]
+  cientos = number_str[6..]
   converted << str_millones(millones)
   converted << str_miles(miles)
   converted << str_cientos(cientos)
@@ -59,7 +59,7 @@ def a_palabras(number)
   converted.capitalize
 end
 
-# largo maximo 3 digitos
+# largo máximo 3 dígitos
 def convertir_numero(num)
   output = ''
   if num == '100'
@@ -67,7 +67,7 @@ def convertir_numero(num)
   elsif num[0] != '0'
     output = CENTENAS[num[0].to_i - 1]
   end
-  k = num[1..-1].to_i
+  k = num[1..].to_i
   output << if k <= 20
               UNIDADES[k]
             elsif (k > 30) && (num[2] != '0')
@@ -79,7 +79,7 @@ end
 
 # Rutina par redondeo de cifras decimales como para uso en contabilidad
 def redondeo(cifra, digitos = 2)
-  # Symmetric Arithmetic Rounding for decimal numbers
+  # Rendondeo aritmético para números decimales
   cifra = decimal.Decimal(cifra.to_s) unless cifra.instace_of? BigDecimal
   nume = decimal.Decimal('1')
   denomi = (decimal.Decimal('10')**digitos)
