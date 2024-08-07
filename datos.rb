@@ -46,6 +46,48 @@ end
 # Clase para interactuar con una tabla genérica
 class Tabla < Datos
   # Al inicializar debería ini el diccionario y cargar un registro con valores
+=======
+class Datos
+  """Encapsula llamadas al motor de base de datos"""
+  def initialize(motor, data="")
+    # Asigna valores a atributos del objeto Datos
+    @motor = motor
+    @num_filas = 0
+    if @self.motor == "ifmx"
+      # Falta adecuar la configuracion de informix
+      @ifmx = ifmxdb.Ifmx()
+    elsif @motor == "pg"
+      @datab = psycopg2.connect(host='100.0.2.65', database="magik", user="postgres", password="postgres")
+      # noinspection PyArgumentList
+      @cursor = self.datab.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    else
+      # la opcion por defecto es sqlite
+      # la extensión es "db"
+      @data = data
+      begin
+        # Directorio por defecto "./datos"
+        @datab = sqlite3.connect("./datos/" + @data + ".db",  detect_types=sqlite3.PARSE_DECLTYPES)
+        @datab.row_factory = sqlite3.Row
+        @cursor = self.datab.cursor()
+      rescue sqlite3.Error => error
+        print(error)
+      end
+    end
+  end
+
+  # Rutina genérica de ejecución de SQL levanta error si corresponde
+  def ejecutar(sql)
+    begin
+      @cursor.execute(sql)
+      @datab.commit
+    rescue RuntimeError => error
+      puts error
+    end
+  end
+end
+
+# Clase para interactuar con una tabla genérica
+class Tabla < Datos
   def initialize(motor, table, clave="id", data="", ins_clave=false)
     # Ojo! debería rise un error si tabla no existe
     # Si no se especifica nada el campo Key es ID
@@ -59,6 +101,9 @@ class Tabla < Datos
     @encontrado = False
     @campos = {}
     Datos.__init__(self, motor, data=self.bdd)
+    @encontrado = false
+    @campos = {}
+    super(motor, data=@bdd)
     # Campo que funciona como clave
     @clave = clave
     # define si al insertar se inserta o no el valor del campo clave (x ej si es autonum)
@@ -74,6 +119,14 @@ class Tabla < Datos
   end
   # Asigna descripciones de campos de la tabla abierta"""
   def asignar_campos        
+    sql = "SELECT * FROM " + @tabla + " LIMIT 1"
+    @cursor.execute(sql)
+    asignar_campos
+    asignar_datos(sql)
+  end
+
+  #Asigna descripciones de campos de la tabla abierta
+  def asignar_campos
     tipos = {5: "DOUBLE", 7: "TIMESTAMP", 8: "BIGINT", 10: "DATE",
              246: "DECIMAL", 253: "VARCHAR", 254: "CHAR"}
     # Fin de asignación de datos de campos ===================
@@ -107,6 +160,30 @@ class Tabla < Datos
         @registro.each do |campo|
             valor = @registro[campo]
             if valor.nil?
+      if item[1] in tipos:
+                # si item 1 está en la lista de tipos, ponerlo
+                tipo = tipos[item[1]]
+            else:
+                tipo = str(item[1])
+            datos = {"tipo": tipo, "muestra": item[2], "longitud": item[3],
+                     "decimales": item[5], "nulo": item[6]}
+            self.campos[campo] = datos
+            # poner nombres de campos en self.registro
+            # Esta hecho así para que existan nombres a pesar de que la tabla
+            # esté vacía
+
+    def nuevo(self):
+        """Poner un nuevo registro con valores nulos"""
+        for item in self.campos:
+            self.registro[item] = None
+
+    def insertar(self):
+        """inserta una lista de campos en una tabla"""
+        sql = 'INSERT INTO ' + self.tabla + ' ('
+        valores = ' VALUES ('
+        for campo in self.registro:
+            valor = self.registro[campo]
+            if valor is None:
                 continue
             end
             if not @registro[campo].nil?

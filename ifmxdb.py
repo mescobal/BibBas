@@ -14,7 +14,7 @@ import decimal
 import pyodbc
 
 
-class Ifmx(object):
+class Ifmx:
     """Clase para conectarse a Informix"""
     def __init__(self, odbc_dsn="nombre_del_dsn"):
         """Conexión a informix con configuración de codificación de caracteres
